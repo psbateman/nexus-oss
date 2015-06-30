@@ -138,7 +138,7 @@ extends FunctionalTestSupport
 
     MultipartEntityBuilder reqEntity = MultipartEntityBuilder.create()
     reqEntity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-    reqEntity.addPart("package", new FileBody(file))
+    reqEntity.addPart("file", new FileBody(file))
 
     put.setEntity(reqEntity.build())
 
