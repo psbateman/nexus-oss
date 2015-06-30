@@ -43,6 +43,7 @@ import org.sonatype.nexus.repository.MissingFacetException;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.group.GroupFacet;
+import org.sonatype.nexus.repository.proxy.CacheInfo;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Component;
@@ -103,8 +104,6 @@ public class NugetGalleryFacetImpl
   private StorageFacet storage;
 
   private static final VersionScheme SCHEME = new GenericVersionScheme();
-
-  private static final String P_LAST_VERIFIED_DATE = "last_verified";
 
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
@@ -408,26 +407,9 @@ public class NugetGalleryFacetImpl
   }
 
   @Override
-  public DateTime getLastVerified(final String id, final String version) {
-    checkNotNull(id);
-    checkNotNull(version);
-
-    try (StorageTx tx = openStorageTx()) {
-      final Asset asset = findAsset(tx, id, version);
-
-      checkState(asset != null);
-
-      Date date = asset.formatAttributes().get(P_LAST_VERIFIED_DATE, Date.class);
-
-      log.debug("Content for {} {} last verified as of {}", id, version, date);
-      return new DateTime(checkNotNull(date));
-    }
-  }
-
-  @Override
-  public void setLastVerified(final String id, final String version, final DateTime date) {
-    checkNotNull(date);
-    final Date priorDate = storage.perform(new Operation<Date>()
+  public void setLastVerified(final String id, final String version, final CacheInfo cacheInfo) {
+    checkNotNull(cacheInfo);
+/*    final Date priorDate = storage.perform(new Operation<Date>()
     {
       @Override
       public Date execute(final StorageTx tx) {
@@ -435,7 +417,10 @@ public class NugetGalleryFacetImpl
         checkState(asset != null);
 
         final Date priorDate = asset.formatAttributes().get(P_LAST_VERIFIED_DATE, Date.class);
-        asset.formatAttributes().set(P_LAST_VERIFIED_DATE, date.toDate());
+        asset.formatAttributes().set(P_LAST_VERIFIED_DATE, cacheInfo.getLastVerified().toDate());
+        if (cacheInfo.getCacheToken() != null) {
+          asset.formatAttributes().set(P_LAST_VERIFIED_DATE, cacheInfo.getLastVerified().toDate());
+        }
 
         return priorDate;
       }
@@ -444,8 +429,8 @@ public class NugetGalleryFacetImpl
       public String toString() {
         return String.format("setLastVerified(%s, %s, %s)", id, version, date);
       }
-    });
-    log.debug("Updating last verified date of {} {} from {} to {}", id, version, priorDate, date);
+    });*/
+    // log.debug("Updating last verified date of {} {} from {} to {}", id, version, priorDate, date);
   }
 
   @Override
@@ -613,7 +598,7 @@ public class NugetGalleryFacetImpl
       Asset asset = findOrCreateAsset(storageTx, component);
       updateAssetMetadata(asset, data, component.isNew());
 
-      asset.formatAttributes().set(P_LAST_VERIFIED_DATE, new Date());
+      //asset.formatAttributes().set(P_LAST_VERIFIED_DATE, new Date());
       storageTx.setBlob(asset, blobName(component), in, singletonList(HashAlgorithm.SHA512), null, "application/zip");
 
       storageTx.saveAsset(asset);

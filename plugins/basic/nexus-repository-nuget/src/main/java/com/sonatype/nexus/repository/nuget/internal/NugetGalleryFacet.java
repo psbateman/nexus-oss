@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.sonatype.nexus.repository.Facet;
+import org.sonatype.nexus.repository.proxy.CacheInfo;
 import org.sonatype.nexus.repository.view.Payload;
 
 import org.joda.time.DateTime;
@@ -54,15 +55,9 @@ public interface NugetGalleryFacet
   Payload get(String id, String version) throws IOException;
 
   /**
-   * Gets when we last checked that the content was up to date relative to the remote server, or {@code null} if not
-   * found.
-   */
-  DateTime getLastVerified(String id, String version);
-
-  /**
    * Sets when we last checked that the content was up to date relative to the remote server.
    */
-  void setLastVerified(String id, String version, DateTime date);
+  void setLastVerified(String id, String version, CacheInfo cacheInfo);
 
   /**
    * Delete a package and return whether it existed.

@@ -13,8 +13,6 @@
 package org.sonatype.nexus.repository.raw.internal;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -26,13 +24,17 @@ import org.sonatype.nexus.common.io.TempStreamSupplier;
 import org.sonatype.nexus.repository.FacetSupport;
 import org.sonatype.nexus.repository.InvalidContentException;
 import org.sonatype.nexus.repository.config.Configuration;
-import org.sonatype.nexus.repository.raw.RawContent;
+import org.sonatype.nexus.repository.proxy.CacheInfo;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
 import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageFacet.Operation;
 import org.sonatype.nexus.repository.storage.StorageTx;
+import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentInfo;
+import org.sonatype.nexus.repository.view.Payload;
+import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -55,8 +57,6 @@ public class RawContentFacetImpl
 {
   private final static List<HashAlgorithm> hashAlgorithms = Lists.newArrayList(MD5, SHA1);
 
-  private static final String P_LAST_VERIFIED_DATE = "last_verified";
-
   // TODO: raw does not have config, this method is here only to have this bundle do Import-Package org.sonatype.nexus.repository.config
   // TODO: as FacetSupport subclass depends on it. Actually, this facet does not need any kind of configuration
   // TODO: it's here only to circumvent this OSGi/maven-bundle-plugin issue.
@@ -67,7 +67,7 @@ public class RawContentFacetImpl
 
   @Nullable
   @Override
-  public RawContent get(final String path) {
+  public Content get(final String path) {
     try (StorageTx tx = getStorage().openTx()) {
       final Component component = getComponent(tx, path, tx.getBucket());
       if (component == null) {
@@ -82,8 +82,8 @@ public class RawContentFacetImpl
   }
 
   @Override
-  public void put(final String path, final RawContent content) throws IOException, InvalidContentException {
-    try (final TempStreamSupplier streamSupplier = new TempStreamSupplier(content.openInputStream())) {
+  public void put(final String path, final Payload payload) throws IOException, InvalidContentException {
+    try (final TempStreamSupplier streamSupplier = new TempStreamSupplier(payload.openInputStream())) {
       getStorage().perform(new Operation<Void>()
       {
         @Override
@@ -110,8 +110,27 @@ public class RawContentFacetImpl
               asset = tx.firstAsset(component);
             }
 
-            asset.formatAttributes().set(P_LAST_VERIFIED_DATE, new Date());
-            tx.setBlob(asset, path, streamSupplier.get(), hashAlgorithms, null, content.getContentType());
+            if (payload instanceof Content) {
+              final Content content = (Content) payload;
+
+              final ContentInfo contentInfo = content.getAttributes().get(ContentInfo.class);
+              if (contentInfo != null) {
+                ContentInfo.apply(asset, contentInfo);
+              }
+              else {
+                ContentInfo.apply(asset, new ContentInfo(DateTime.now(), null));
+              }
+
+              final CacheInfo cacheInfo = content.getAttributes().get(CacheInfo.class);
+              if (cacheInfo != null) {
+                CacheInfo.apply(asset, cacheInfo);
+              }
+            }
+            else {
+              ContentInfo.apply(asset, new ContentInfo(DateTime.now(), null));
+            }
+
+            tx.setBlob(asset, path, streamSupplier.get(), hashAlgorithms, null, payload.getContentType());
             tx.saveAsset(asset);
 
             return null;
@@ -172,11 +191,11 @@ public class RawContentFacetImpl
   }
 
   @Override
-  public void updateLastVerified(final String path, final DateTime lastUpdated) throws IOException {
-    getStorage().perform(new Operation<Date>()
+  public void setCacheInfo(final String path, final CacheInfo cacheInfo) throws IOException {
+    getStorage().perform(new Operation<Void>()
     {
       @Override
-      public Date execute(final StorageTx tx) {
+      public Void execute(final StorageTx tx) {
         Component component = tx.findComponentWithProperty(P_PATH, path, tx.getBucket());
 
         if (component == null) {
@@ -185,17 +204,14 @@ public class RawContentFacetImpl
         }
 
         final Asset asset = tx.firstAsset(component);
-
-        final Date priorDate = asset.formatAttributes().get(P_LAST_VERIFIED_DATE, Date.class);
-        asset.formatAttributes().set(P_LAST_VERIFIED_DATE, lastUpdated.toDate());
+        CacheInfo.apply(asset, cacheInfo);
         tx.saveAsset(tx.firstAsset(component));
-
-        return priorDate;
+        return null;
       }
 
       @Override
       public String toString() {
-        return String.format("updateLastVerified(%s, %s)", path, lastUpdated);
+        return String.format("setCacheInfo(%s, %s)", path, cacheInfo);
       }
     });
   }
@@ -210,31 +226,10 @@ public class RawContentFacetImpl
     return tx.findComponentWithProperty(property, path, bucket);
   }
 
-  private RawContent marshall(final Asset asset, final Blob blob) {
-    final String contentType = asset.requireContentType();
-    final DateTime lastVerified = new DateTime(asset.formatAttributes().require(P_LAST_VERIFIED_DATE, Date.class));
-
-    return new RawContent()
-    {
-      @Override
-      public String getContentType() {
-        return contentType;
-      }
-
-      @Override
-      public long getSize() {
-        return blob.getMetrics().getContentSize();
-      }
-
-      @Override
-      public InputStream openInputStream() {
-        return blob.getInputStream();
-      }
-
-      @Override
-      public DateTime getLastVerified() {
-        return lastVerified;
-      }
-    };
+  private Content marshall(final Asset asset, final Blob blob) {
+    final Content content = new Content(new BlobPayload(blob, asset.requireContentType()));
+    content.getAttributes().set(ContentInfo.class, ContentInfo.extract(asset));
+    content.getAttributes().set(CacheInfo.class, CacheInfo.extract(asset));
+    return content;
   }
 }

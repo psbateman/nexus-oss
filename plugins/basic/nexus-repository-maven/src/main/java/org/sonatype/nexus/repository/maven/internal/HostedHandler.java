@@ -25,6 +25,7 @@ import org.sonatype.nexus.repository.maven.MavenFacet;
 import org.sonatype.nexus.repository.maven.MavenPath;
 import org.sonatype.nexus.repository.util.TypeTokens;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentInfo;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Handler;
 import org.sonatype.nexus.repository.view.Response;
@@ -103,14 +104,18 @@ public class HostedHandler
    * good thing to do, as the content is hosted here only and NX is content authority.
    */
   private void mayAddETag(final Content content) {
-    if (content.getAttributes().get(Content.CONTENT_ETAG, String.class) != null) {
+    final ContentInfo contentInfo = content.getAttributes().get(ContentInfo.class);
+    if (contentInfo != null && contentInfo.getEtag() != null) {
       return;
     }
     final Map<HashAlgorithm, HashCode> hashCodes = content.getAttributes()
         .require(Content.CONTENT_HASH_CODES_MAP, TypeTokens.HASH_CODES_MAP);
     final HashCode sha1HashCode = hashCodes.get(HashAlgorithm.SHA1);
     if (sha1HashCode != null) {
-      content.getAttributes().set(Content.CONTENT_ETAG, "{SHA1{" + sha1HashCode.toString() + "}}");
+      content.getAttributes().set(ContentInfo.class, new ContentInfo(
+          contentInfo != null ? contentInfo.getLastModified() : null,
+          "{SHA1{" + sha1HashCode.toString() + "}}"
+      ));
     }
   }
 }

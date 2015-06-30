@@ -24,6 +24,7 @@ import com.sonatype.nexus.repository.nuget.internal.NugetGalleryFacet;
 import com.sonatype.nexus.repository.nuget.odata.ODataConsumer;
 
 import org.sonatype.nexus.repository.InvalidContentException;
+import org.sonatype.nexus.repository.proxy.CacheInfo;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Context;
@@ -99,15 +100,9 @@ public class NugetProxyFacet
   }
 
   @Override
-  protected DateTime getCachedPayloadLastVerified(final Context context) throws IOException {
+  protected void indicateVerified(final Context context, final CacheInfo cacheInfo) throws IOException {
     String[] coords = coords(context);
-    return gallery().getLastVerified(coords[0], coords[1]);
-  }
-
-  @Override
-  protected void indicateVerified(final Context context) throws IOException {
-    String[] coords = coords(context);
-    gallery().setLastVerified(coords[0], coords[1], new DateTime());
+    gallery().setLastVerified(coords[0], coords[1], cacheInfo);
   }
 
   @Override

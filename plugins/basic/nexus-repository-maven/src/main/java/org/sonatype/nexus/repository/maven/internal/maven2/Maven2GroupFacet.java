@@ -40,6 +40,7 @@ import org.sonatype.nexus.repository.storage.AssetEvent;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.util.TypeTokens;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentInfo;
 import org.sonatype.nexus.repository.view.Response;
 import org.sonatype.nexus.repository.view.payloads.BytesPayload;
 import org.sonatype.nexus.repository.view.payloads.StringPayload;
@@ -157,8 +158,8 @@ public class Maven2GroupFacet
             byteArray,
             Maven2MimeRulesSource.METADATA_TYPE
         ));
-    content.getAttributes().set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
-    content.getAttributes().set(Content.CONTENT_ETAG, "{SHA1{" + hashCodes.get(HashAlgorithm.SHA1).toString() + "}}");
+    final ContentInfo contentInfo = new ContentInfo(DateTime.now(), "{SHA1{" + hashCodes.get(HashAlgorithm.SHA1).toString() + "}}");
+    content.getAttributes().set(ContentInfo.class, contentInfo);
     content.getAttributes().set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
     return content;
   }
@@ -166,7 +167,7 @@ public class Maven2GroupFacet
   private Content cacheMetadata(final MavenPath mavenPath, final Content content) throws IOException {
     final Map<HashAlgorithm, HashCode> hashCodes = content.getAttributes().require(
         Content.CONTENT_HASH_CODES_MAP, TypeTokens.HASH_CODES_MAP);
-    final DateTime now = content.getAttributes().require(Content.CONTENT_LAST_MODIFIED, DateTime.class);
+    final ContentInfo contentInfo = content.getAttributes().require(ContentInfo.class);
     // cache the metadata and the hashes
     mavenFacet.put(mavenPath, content);
     for (HashType hashType : HashType.values()) {
@@ -174,7 +175,8 @@ public class Maven2GroupFacet
       if (hashCode != null) {
         final Content hashContent = new Content(
             new StringPayload(hashCode.toString(), Constants.CHECKSUM_CONTENT_TYPE));
-        hashContent.getAttributes().set(Content.CONTENT_LAST_MODIFIED, now);
+        // TODO: calculate hash-of-hash and create etag too
+        hashContent.getAttributes().set(ContentInfo.class, new ContentInfo(contentInfo.getLastModified(), null));
         mavenFacet.put(mavenPath.hash(hashType), hashContent);
       }
     }
