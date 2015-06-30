@@ -61,7 +61,7 @@ public class ContentHeadersHandlerTest
   @Test
   public void okResponse() throws Exception {
     final Content content = new Content(new StringPayload(payloadString, "text/plain"));
-    content.getAttributes().set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
+    content.getAttributes().set(Content.CONTENT_LAST_MODIFIED, now);
     content.getAttributes().set(Content.CONTENT_ETAG, "etag");
     when(context.proceed()).thenReturn(HttpResponses.ok(content));
     final Response r = subject.handle(context);
