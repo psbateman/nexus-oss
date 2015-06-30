@@ -13,7 +13,6 @@
 package com.sonatype.nexus.repository.nuget.internal.proxy;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
@@ -28,10 +27,7 @@ import org.sonatype.nexus.repository.proxy.CacheInfo;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Context;
-import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
-
-import org.joda.time.DateTime;
 
 /**
  * Serves NuGet packages, and also exposes proxy configuration and content-fetching.
@@ -51,12 +47,7 @@ public class NugetProxyFacet
   @Override
   protected Content getCachedPayload(final Context context) throws IOException {
     String[] coords = coords(context);
-    Payload payload = gallery().get(coords[0], coords[1]);
-    if (payload != null) {
-      // TODO: get last-modified and etag
-      return new Content(payload);
-    }
-    return null;
+    return gallery().get(coords[0], coords[1]);
   }
 
   @Override
@@ -94,15 +85,13 @@ public class NugetProxyFacet
   protected void store(final Context context, final Content payload) throws IOException, InvalidContentException {
     // The metadata will have been cached by this time, so we just need to set the content
     String[] coords = coords(context);
-    try (InputStream in = payload.openInputStream()) {
-      gallery().putContent(coords[0], coords[1], in);
-    }
+    gallery().putContent(coords[0], coords[1], payload);
   }
 
   @Override
   protected void indicateVerified(final Context context, final CacheInfo cacheInfo) throws IOException {
     String[] coords = coords(context);
-    gallery().setLastVerified(coords[0], coords[1], cacheInfo);
+    gallery().setCacheInfo(coords[0], coords[1], cacheInfo);
   }
 
   @Override

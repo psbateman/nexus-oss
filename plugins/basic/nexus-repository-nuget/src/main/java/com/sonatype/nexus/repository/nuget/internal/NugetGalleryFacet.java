@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 
 import org.sonatype.nexus.repository.Facet;
 import org.sonatype.nexus.repository.proxy.CacheInfo;
+import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 
 import org.joda.time.DateTime;
@@ -46,18 +47,18 @@ public interface NugetGalleryFacet
   /**
    * Attach content to pre-existing metadata.
    */
-  void putContent(String id, String version, InputStream content) throws IOException;
+  void putContent(String id, String version, Content content) throws IOException;
 
   /**
    * Get a package, or {@code null} if not found.
    */
   @Nullable
-  Payload get(String id, String version) throws IOException;
+  Content get(String id, String version) throws IOException;
 
   /**
    * Sets when we last checked that the content was up to date relative to the remote server.
    */
-  void setLastVerified(String id, String version, CacheInfo cacheInfo);
+  void setCacheInfo(String id, String version, CacheInfo cacheInfo);
 
   /**
    * Delete a package and return whether it existed.

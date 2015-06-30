@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -33,6 +32,7 @@ import com.sonatype.nexus.repository.nuget.odata.ODataUtils;
 
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.blobstore.api.BlobRef;
+import org.sonatype.nexus.common.collect.AttributesMap;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.common.io.TempStreamSupplier;
@@ -51,9 +51,9 @@ import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageFacet.Operation;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.types.HostedType;
-import org.sonatype.nexus.repository.view.Payload;
-import org.sonatype.nexus.repository.view.payloads.StreamPayload;
-import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
+import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentMarshaller;
+import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
@@ -263,8 +263,8 @@ public class NugetGalleryFacetImpl
   }
 
   @Override
-  public void putContent(final String id, final String version, final InputStream content) throws IOException {
-    try (TempStreamSupplier t = new TempStreamSupplier(content)) {
+  public void putContent(final String id, final String version, final Content content) throws IOException {
+    try (TempStreamSupplier t = new TempStreamSupplier(content.openInputStream())) {
       storage.perform(new Operation<Object>()
       {
         @Override
@@ -274,7 +274,7 @@ public class NugetGalleryFacetImpl
               component != null && tx.browseAssets(component).iterator().hasNext(),
               "Component metadata does not exist yet"
           );
-          createOrUpdateAssetAndContents(tx, component, t.get(), null);
+          createOrUpdateAssetAndContents(tx, component, t.get(), null, content.getAttributes());
           return null;
         }
 
@@ -373,7 +373,7 @@ public class NugetGalleryFacetImpl
 
   @Override
   @Guarded(by = STARTED)
-  public Payload get(final String id, final String version) throws IOException {
+  public Content get(final String id, final String version) throws IOException {
     checkNotNull(id);
     checkNotNull(version);
 
@@ -391,46 +391,32 @@ public class NugetGalleryFacetImpl
       final Blob blob = tx.requireBlob(blobRef);
       String contentType = asset.contentType();
 
-      return new StreamPayload(
-          new InputStreamSupplier()
-          {
-            @Nonnull
-            @Override
-            public InputStream get() throws IOException {
-              return blob.getInputStream();
-            }
-          },
-          blob.getMetrics().getContentSize(),
-          contentType
-      );
+      final Content content = new Content(new BlobPayload(blob, contentType));
+      ContentMarshaller.extract(content.getAttributes(), asset, singletonList(HashAlgorithm.SHA512));
+      return content;
     }
   }
 
   @Override
-  public void setLastVerified(final String id, final String version, final CacheInfo cacheInfo) {
+  public void setCacheInfo(final String id, final String version, final CacheInfo cacheInfo) {
     checkNotNull(cacheInfo);
-/*    final Date priorDate = storage.perform(new Operation<Date>()
+    storage.perform(new Operation<Void>()
     {
       @Override
-      public Date execute(final StorageTx tx) {
+      public Void execute(final StorageTx tx) {
         Asset asset = findAsset(tx, id, version);
         checkState(asset != null);
 
-        final Date priorDate = asset.formatAttributes().get(P_LAST_VERIFIED_DATE, Date.class);
-        asset.formatAttributes().set(P_LAST_VERIFIED_DATE, cacheInfo.getLastVerified().toDate());
-        if (cacheInfo.getCacheToken() != null) {
-          asset.formatAttributes().set(P_LAST_VERIFIED_DATE, cacheInfo.getLastVerified().toDate());
-        }
-
-        return priorDate;
+        CacheInfo.apply(asset, cacheInfo);
+        return null;
       }
 
       @Override
       public String toString() {
-        return String.format("setLastVerified(%s, %s, %s)", id, version, date);
+        return String.format("setCacheInfo(%s, %s, %s)", id, version, cacheInfo);
       }
-    });*/
-    // log.debug("Updating last verified date of {} {} from {} to {}", id, version, priorDate, date);
+    });
+    log.debug("Updating cacheInfo of {} {} tp {}", id, version, cacheInfo);
   }
 
   @Override
@@ -459,7 +445,7 @@ public class NugetGalleryFacetImpl
                                              final InputStream packageStream)
   {
     final Component component = createOrUpdateComponent(storageTx, recordMetadata);
-    createOrUpdateAssetAndContents(storageTx, component, packageStream, recordMetadata);
+    createOrUpdateAssetAndContents(storageTx, component, packageStream, recordMetadata, null);
     return component;
   }
 
@@ -592,13 +578,22 @@ public class NugetGalleryFacetImpl
   private void createOrUpdateAssetAndContents(final StorageTx storageTx,
                                               final Component component,
                                               final InputStream in,
-                                              final Map<String, String> data)
+                                              final Map<String, String> data,
+                                              @Nullable final AttributesMap contentAttributes)
   {
     try {
       Asset asset = findOrCreateAsset(storageTx, component);
       updateAssetMetadata(asset, data, component.isNew());
 
-      //asset.formatAttributes().set(P_LAST_VERIFIED_DATE, new Date());
+      if (contentAttributes != null) {
+        ContentMarshaller.apply(asset, contentAttributes);
+      }
+      if (contentAttributes == null || !contentAttributes.contains(Content.CONTENT_LAST_MODIFIED)) {
+        AttributesMap newAttributes = new AttributesMap();
+        newAttributes.set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
+        ContentMarshaller.apply(asset, newAttributes);
+      }
+
       storageTx.setBlob(asset, blobName(component), in, singletonList(HashAlgorithm.SHA512), null, "application/zip");
 
       storageTx.saveAsset(asset);

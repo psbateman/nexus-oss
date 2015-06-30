@@ -183,7 +183,8 @@ public class MavenFacetImpl
     final Blob blob = tx.requireBlob(asset.requireBlobRef());
     final String contentType = asset.contentType();
     final Content content = new Content(new BlobPayload(blob, contentType));
-    return ContentMarshaller.extract(content, asset, HashType.ALGORITHMS);
+    ContentMarshaller.extract(content.getAttributes(), asset, HashType.ALGORITHMS);
+    return content;
   }
 
   @Override

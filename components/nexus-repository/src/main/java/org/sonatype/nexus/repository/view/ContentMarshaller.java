@@ -45,9 +45,9 @@ public class ContentMarshaller
 
   private ContentMarshaller() {}
 
-  public static Content extract(final Content content,
-                                final Asset asset,
-                                final Iterable<HashAlgorithm> hashAlgorithms)
+  public static void extract(final AttributesMap content,
+                             final Asset asset,
+                             final Iterable<HashAlgorithm> hashAlgorithms)
   {
     checkNotNull(asset);
     checkNotNull(hashAlgorithms);
@@ -62,15 +62,13 @@ public class ContentMarshaller
       hashCodes.put(algorithm, hashCode);
     }
 
-    final AttributesMap attributesMap = content.getAttributes();
-    attributesMap.set(Content.CONTENT_LAST_MODIFIED, lastModified);
-    attributesMap.set(Content.CONTENT_ETAG, etag);
-    attributesMap.set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
-    attributesMap.set(CacheInfo.class, CacheInfo.extract(asset));
-    return content;
+    content.set(Content.CONTENT_LAST_MODIFIED, lastModified);
+    content.set(Content.CONTENT_ETAG, etag);
+    content.set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
+    content.set(CacheInfo.class, CacheInfo.extract(asset));
   }
 
-  public static Asset apply(final Asset asset, final AttributesMap content) {
+  public static void apply(final Asset asset, final AttributesMap content) {
     checkNotNull(asset);
     checkNotNull(content);
     final NestedAttributesMap contentAttributes = asset.attributes().child(P_CONTENT);
@@ -80,6 +78,5 @@ public class ContentMarshaller
     if (cacheInfo != null) {
       CacheInfo.apply(asset, cacheInfo);
     }
-    return asset;
   }
 }

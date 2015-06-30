@@ -219,6 +219,7 @@ public class RawContentFacetImpl
 
   private Content marshall(final Asset asset, final Blob blob) {
     final Content content = new Content(new BlobPayload(blob, asset.requireContentType()));
-    return ContentMarshaller.extract(content, asset, hashAlgorithms);
+    ContentMarshaller.extract(content.getAttributes(), asset, hashAlgorithms);
+    return content;
   }
 }
