@@ -29,7 +29,7 @@ StartTest(function(t) {
             t.waitForAnimations(next);
           },
           {waitFor: 'CQ', args: 'nx-coreui-search-result-list'},
-          {type: 'name:maven', target: '>>nx-coreui-searchfeature field[criteriaId=keyword]'},
+          {type: 'name:aopalliance', target: '>>nx-coreui-searchfeature field[criteriaId=keyword]'},
           Ext.clone(waitForStoreToLoad),
           function(next) {
             var grid = t.cq1('nx-coreui-search-result-list'),
@@ -38,7 +38,7 @@ StartTest(function(t) {
 
             t.expect(model).toBeDefined();
             t.expect(model.get('format')).toEqual('maven2');
-            t.expect(model.get('name')).toBe(t.anyStringLike('maven'));
+            t.expect(model.get('name')).toBe(t.anyStringLike('aopalliance'));
             next();
           }
       )
@@ -50,7 +50,7 @@ StartTest(function(t) {
             t.waitForAnimations(next);
           },
           {waitFor: 'CQ', args: 'nx-coreui-search-result-list'},
-          {type: 'maven', target: '>>nx-coreui-searchfeature field[criteriaId=attributes.maven2.artifactId]'},
+          {type: 'aopalliance', target: '>>nx-coreui-searchfeature field[criteriaId=attributes.maven2.artifactId]'},
           Ext.clone(waitForStoreToLoad),
           function(next) {
             var grid = t.cq1('nx-coreui-search-result-list'),
@@ -59,7 +59,7 @@ StartTest(function(t) {
 
             t.expect(model).toBeDefined();
             t.expect(model.get('format')).toEqual('maven2');
-            t.expect(model.get('name')).toBe(t.anyStringLike('maven'));
+            t.expect(model.get('name')).toBe(t.anyStringLike('aopalliance'));
             next();
           }
       )
