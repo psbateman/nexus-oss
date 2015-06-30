@@ -102,6 +102,13 @@ Ext.define('NX.controller.Drilldown', {
       click: me.onDelete
     };
 
+    // Back button
+    componentListener[me.masters[0] + ' ^ nx-drilldown nx-addpanel button[action=back]'] = {
+      click: function() {
+        me.showChild(0, true);
+      }
+    };
+
     me.listen({
       component: componentListener,
       controller: {

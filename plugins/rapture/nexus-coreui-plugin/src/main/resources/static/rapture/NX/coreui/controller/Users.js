@@ -213,11 +213,10 @@ Ext.define('NX.coreui.controller.Users', {
    * @private
    */
   showAddWindow: function() {
-    var me = this,
-      feature = me.getFeature();
+    var me = this;
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('Users_Create_Title'));
+    me.setItemName(1, NX.I18n.get('Users_Create_Title'));
     me.loadCreateWizard(1, true, Ext.create('widget.nx-coreui-user-add'));
   },
 

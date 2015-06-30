@@ -144,11 +144,10 @@ Ext.define('NX.coreui.controller.SslCertificates', {
    * @private
    */
   showAddWindowFromServer: function () {
-    var me = this,
-      feature = me.getFeature();
+    var me = this;
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('SslCertificates_Load_Title'));
+    me.setItemName(1, NX.I18n.get('SslCertificates_Load_Title'));
     me.loadCreateWizard(1, true, Ext.create('widget.nx-coreui-sslcertificate-add-from-server'));
   },
 
@@ -156,11 +155,10 @@ Ext.define('NX.coreui.controller.SslCertificates', {
    * @private
    */
   showAddWindowFromPem: function () {
-    var me = this,
-      feature = me.getFeature();
+    var me = this;
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('SslCertificates_Paste_Title'));
+    me.setItemName(1, NX.I18n.get('SslCertificates_Paste_Title'));
     me.loadCreateWizard(1, true, Ext.create('widget.nx-coreui-sslcertificate-add-from-pem'));
   },
 
@@ -170,7 +168,6 @@ Ext.define('NX.coreui.controller.SslCertificates', {
    */
   showCertificateDetailsPanel: function(certificate) {
     var me = this,
-        feature = me.getFeature(),
         panel = Ext.widget('nx-coreui-sslcertificate-details-panel'),
         form = panel.down('form'),
         model = me.getSslCertificateModel().create(certificate);
@@ -181,7 +178,7 @@ Ext.define('NX.coreui.controller.SslCertificates', {
     form.loadRecord(model);
 
     // Show the second panel in the create wiard, and set the breadcrumb
-    feature.setItemName(2, NX.I18n.get('Ssl_SslCertificateDetailsWindow_Title'));
+    me.setItemName(2, NX.I18n.get('Ssl_SslCertificateDetailsWindow_Title'));
     me.loadCreateWizard(2, true, panel);
   },
 
