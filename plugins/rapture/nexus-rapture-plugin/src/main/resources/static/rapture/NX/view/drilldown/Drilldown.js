@@ -93,6 +93,8 @@ Ext.define('NX.view.drilldown.Drilldown', {
       items: items
     };
 
+    me.addEvents('syncsize');
+
     me.callParent(arguments);
   },
 

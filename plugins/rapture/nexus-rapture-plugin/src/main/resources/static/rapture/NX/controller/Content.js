@@ -48,6 +48,20 @@ Ext.define('NX.controller.Content', {
         '#Menu': {
           featureselected: me.onFeatureSelected
         }
+      },
+      component: {
+        'nx-feature-content': {
+          resize: function (obj) {
+            if (obj.down('nx-drilldown')) {
+              obj.down('nx-drilldown').fireEvent('syncsize');
+            }
+          }
+        },
+        'nx-feature-content nx-drilldown': {
+          afterrender: function(obj) {
+            obj.fireEvent('syncsize');
+          }
+        }
       }
     });
   },

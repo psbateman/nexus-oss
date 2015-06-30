@@ -87,9 +87,8 @@ Ext.define('NX.controller.Drilldown', {
       };
     }
 
-    // Drilldown
-    componentListener['nx-drilldown'] = {
-      afterrender: me.bindDrilldownPanel
+    componentListener[me.masters[0] + ' ^ nx-drilldown'] = {
+      syncsize: me.syncSizeToOwner
     };
 
     // New button
@@ -225,16 +224,15 @@ Ext.define('NX.controller.Drilldown', {
    * @param cmp An optional component to load
    */
   loadCreateWizard: function (index, animate, cmp) {
-    var me = this,
-      feature = me.getFeature();
+    var me = this;
 
     // Reset all non-root bookmarks
     for (var i = 1; i <= index; ++i) {
-      feature.setItemBookmark(i, null);
+      me.setItemBookmark(i, null);
     }
 
     // Show the specified step in the wizard
-    feature.showCreateWizard(index, animate, cmp);
+    me.showCreateWizard(index, animate, cmp);
   },
 
   /**
@@ -376,7 +374,7 @@ Ext.define('NX.controller.Drilldown', {
    *
    * @override
    */
-  bindDrilldownPanel: function (drilldown) {
+  /*bindDrilldownPanel: function (drilldown) {
     var me = this;
 
     me.currentIndex = 0;
@@ -388,7 +386,7 @@ Ext.define('NX.controller.Drilldown', {
         afterlayout: me.syncSizeToOwner
       });
     }
-  },
+  },*/
 
   // Constants which represent card indexes
   BROWSE_INDEX: 0,
@@ -400,7 +398,6 @@ Ext.define('NX.controller.Drilldown', {
    * Given N drilldown items, this panel should have a width of N times the current screen width
    */
   syncSizeToOwner: function () {
-    console.log(this);
     var me = this,
       owner = me.getDrilldown().ownerCt.body.el,
       container = me.getDrilldown().down('container');
@@ -515,7 +512,7 @@ Ext.define('NX.controller.Drilldown', {
       createContainer.removeAll();
     }
 
-    if (item.el) {
+    if (item && item.el) {
 
       // Restore the current card
       items[index].getLayout().setActiveItem(items[index].cardIndex);
