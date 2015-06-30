@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -84,7 +84,18 @@ Ext.define('NX.controller.State', {
     );
   },
 
+  /**
+   * Install initial state, primed from app.js
+   *
+   * @override
+   */
   onLaunch: function () {
+    var me = this;
+
+    //<if debug>
+    me.logDebug('Initial state: ', NX.app.state);
+    //</if>
+
     var uiSettings = NX.app.state['uiSettings'];
 
     NX.State.setBrowserSupported(
@@ -98,6 +109,10 @@ Ext.define('NX.controller.State', {
     delete NX.app.state['uiSettings'];
     NX.State.setValues(NX.app.state);
     NX.State.setValues({ uiSettings: uiSettings });
+
+    //<if debug>
+    me.logInfo('State primed');
+    //</if>
   },
 
   /**
@@ -206,7 +221,7 @@ Ext.define('NX.controller.State', {
     var me = this;
 
     //<if debug>
-    me.logDebug('Changed: ' + key + ' -> ' + (value ? Ext.JSON.encode(value) : '(deleted)'));
+    me.logTrace('Changed: ' + key + ' -> ' + (value ? Ext.JSON.encode(value) : '(deleted)'));
     //</if>
 
     me.fireEvent(key.toLowerCase() + 'changed', value, oldValue);

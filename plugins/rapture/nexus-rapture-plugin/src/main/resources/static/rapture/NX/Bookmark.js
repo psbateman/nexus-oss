@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -21,8 +21,9 @@ Ext.define('NX.Bookmark', {
 
   config: {
     /**
-     * @public
      * Bookmark token.
+     *
+     * @public
      * @type {String}
      */
     token: undefined
@@ -39,8 +40,9 @@ Ext.define('NX.Bookmark', {
   },
 
   /**
-   * @private
    * Validates token to be a String and calculates segments.
+   *
+   * @private
    * @param token to apply
    * @returns {String} token
    */

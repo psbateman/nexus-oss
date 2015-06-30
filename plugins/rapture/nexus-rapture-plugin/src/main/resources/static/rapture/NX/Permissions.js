@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -91,6 +91,11 @@ Ext.define('NX.Permissions', {
     var me = this,
         hasPermission = false;
 
+    // HACK: for now complain if we see 'undefined' in permission string
+    if (expectedPermission.search('undefined') !== -1) {
+      me.logError('Invalid permission check:', expectedPermission);
+    }
+
     // short-circuit if permissions are not installed
     if (!me.available()) {
       return false;
@@ -104,7 +109,7 @@ Ext.define('NX.Permissions', {
     // or use cached implied if we know it
     if (me.impliedCache[expectedPermission] !== undefined) {
       //<if debug>
-      me.logDebug('Using cached implied permission: ' + expectedPermission + ' is: ' +
+      me.logTrace('Using cached implied permission: ' + expectedPermission + ' is: ' +
           me.impliedCache[expectedPermission]);
       //</if>
       hasPermission = me.impliedCache[expectedPermission];
@@ -123,7 +128,7 @@ Ext.define('NX.Permissions', {
       me.impliedCache[expectedPermission] = hasPermission;
 
       //<if debug>
-      me.logDebug('Cached implied permission: ' + expectedPermission + ' is: ' + hasPermission);
+      me.logTrace('Cached implied permission: ' + expectedPermission + ' is: ' + hasPermission);
       //</if>
     }
 
@@ -146,7 +151,7 @@ Ext.define('NX.Permissions', {
         part1, part2, i;
 
     //<if debug>
-    me.logDebug('Checking if: ' + permission1 + ' implies: ' + permission2);
+    me.logTrace('Checking if: ' + permission1 + ' implies: ' + permission2);
     //</if>
 
     for (i = 0; i < parts2.length; i++) {
