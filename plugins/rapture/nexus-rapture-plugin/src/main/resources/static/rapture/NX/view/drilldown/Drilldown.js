@@ -37,23 +37,26 @@ Ext.define('NX.view.drilldown.Drilldown', {
    */
   initComponent: function () {
     var me = this,
-      items = [];
+      items = [],
+      views;
 
-    // Normalize the list of masters
+    // Normalize the list of masters. Clone the list to avoid memory leaks.
     if (!me.masters) {
-      me.masters = [];
+      views = [];
     } else if (!Ext.isArray(me.masters)) {
-      me.masters = [me.masters];
+      views = [Ext.clone(me.masters)];
+    } else {
+      views = Ext.Array.clone(me.masters);
     }
 
     // Add the detail panel to the masters array
     if (me.detail) {
       // Use a custom detail panel
-      me.masters.push(me.detail);
+      views.push(me.detail);
     }
     else {
       // Use the default tab panel
-      me.masters.push(
+      views.push(
         {
           xtype: 'nx-drilldown-details',
           ui: 'nx-drilldown-tabs',
@@ -73,8 +76,8 @@ Ext.define('NX.view.drilldown.Drilldown', {
     }
 
     // Stack all panels onto the items array
-    for (var i = 0; i < me.masters.length; ++i) {
-      items.push(me.createDrilldownItem(i, me.masters[i], undefined));
+    for (var i = 0; i < views.length; ++i) {
+      items.push(me.createDrilldownItem(i, views[i], undefined));
     }
 
     // Initialize this component’s items
