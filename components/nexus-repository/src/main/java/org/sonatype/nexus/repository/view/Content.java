@@ -37,7 +37,7 @@ public class Content
   /**
    * Key of content "Last-Modified", with type {@link DateTime}.
    */
-  public static final String CONTENT_LAST_MODIFIED = "last_modified";
+  public static final String CONTENT_LAST_MODIFIED = "lastModified";
 
   /**
    * Key of content "ETag", with type of {@link String}.
