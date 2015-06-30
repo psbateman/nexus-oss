@@ -382,10 +382,10 @@ Ext.define('NX.controller.Drilldown', {
     me.currentIndex = 0;
 
     if (drilldown.ownerCt) {
-      me.relayEvents(drilldown.ownerCt, ['resize'], 'owner');
+      me.relayEvents(drilldown.ownerCt, ['resize', 'afterlayout']);
       me.on({
-        ownerresize: me.syncSizeToOwner,
-        afterrender: me.syncSizeToOwner
+        resize: me.syncSizeToOwner,
+        afterlayout: me.syncSizeToOwner
       });
     }
   },
