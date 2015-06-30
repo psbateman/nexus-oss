@@ -52,7 +52,7 @@ Ext.define('NX.controller.Content', {
       component: {
         'nx-feature-content': {
           resize: function (obj) {
-            if (obj.down('nx-drilldown')) {
+            if (obj && obj.down('nx-drilldown')) {
               obj.down('nx-drilldown').fireEvent('syncsize');
             }
           }
