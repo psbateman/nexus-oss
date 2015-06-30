@@ -157,15 +157,15 @@ public class Maven2GroupFacet
             byteArray,
             Maven2MimeRulesSource.METADATA_TYPE
         ));
-    content.getAttributes().set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
     content.getAttributes().set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
     content.getAttributes().set(Content.CONTENT_ETAG, "{SHA1{" + hashCodes.get(HashAlgorithm.SHA1).toString() + "}}");
+    content.getAttributes().set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
     return content;
   }
 
   private Content cacheMetadata(final MavenPath mavenPath, final Content content) throws IOException {
-    final Map<HashAlgorithm, HashCode> hashCodes = content.getAttributes()
-        .require(Content.CONTENT_HASH_CODES_MAP, TypeTokens.HASH_CODES_MAP);
+    final Map<HashAlgorithm, HashCode> hashCodes = content.getAttributes().require(
+        Content.CONTENT_HASH_CODES_MAP, TypeTokens.HASH_CODES_MAP);
     final DateTime now = content.getAttributes().require(Content.CONTENT_LAST_MODIFIED, DateTime.class);
     // cache the metadata and the hashes
     mavenFacet.put(mavenPath, content);
