@@ -12,6 +12,7 @@ import javax.inject.Inject
 import org.sonatype.nexus.blobstore.api.BlobStoreManager
 import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.config.Configuration
+import org.sonatype.nexus.repository.http.HttpStatus
 import org.sonatype.nexus.repository.manager.RepositoryManager
 import org.sonatype.nexus.repository.maven.policy.VersionPolicy
 import org.sonatype.nexus.repository.storage.WritePolicy
@@ -36,6 +37,8 @@ import org.ops4j.pax.exam.Option
 import org.ops4j.pax.exam.OptionUtils
 import org.ops4j.pax.exam.options.WrappedUrlProvisionOption
 
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.is
 import static org.ops4j.pax.exam.CoreOptions.maven
 import static org.ops4j.pax.exam.CoreOptions.wrappedBundle
 
@@ -68,6 +71,7 @@ extends FunctionalTestSupport
     setupMaven(client)
     setupNuget(client)
     setupRaw(client)
+    waitFor(calmPeriod())
   }
 
   CloseableHttpClient httpClient() {
@@ -139,12 +143,7 @@ extends FunctionalTestSupport
     put.setEntity(reqEntity.build())
 
     CloseableHttpResponse response = httpClient.execute(put)
-    println '-----------------------'
-    println '-----------------------'
-    println put
-    println response
-    println '-----------------------'
-    println '-----------------------'
+    assertThat(response.statusLine.statusCode, is(HttpStatus.CREATED))
   }
 
   URI repositoryBaseUrl(final Repository repository) {
