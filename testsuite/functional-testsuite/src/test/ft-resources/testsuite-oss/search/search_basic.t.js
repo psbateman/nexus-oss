@@ -106,5 +106,47 @@ StartTest(function(t) {
           }
       )
     }, 300000);
+    t.it('Keyword search finds raw components', function(t) {
+      t.chain(
+          t.openPageAsAdmin('browse/search'),
+          function(next) {
+            t.waitForAnimations(next);
+          },
+          {waitFor: 'CQ', args: 'nx-coreui-search-result-list'},
+          {type: 'name:alphabet.txt', target: '>>nx-coreui-searchfeature field[criteriaId=keyword]'},
+          Ext.clone(waitForStoreToLoad),
+          function(next) {
+            var grid = t.cq1('nx-coreui-search-result-list'),
+                store = grid.getStore(),
+                model = store.getAt(0);
+
+            t.expect(model).toBeDefined();
+            t.expect(model.get('format')).toEqual('raw');
+            t.expect(model.get('name')).toBe(t.anyStringLike('alphabet.txt'));
+            next();
+          }
+      )
+    }, 300000);
+    t.it('Raw search finds raw components', function(t) {
+      t.chain(
+          t.openPageAsAdmin('browse/search/raw'),
+          function(next) {
+            t.waitForAnimations(next);
+          },
+          {waitFor: 'CQ', args: 'nx-coreui-search-result-list'},
+          {type: 'alphabet.txt', target: '>>nx-coreui-searchfeature field[criteriaId=attributes.raw.path.tree]'},
+          Ext.clone(waitForStoreToLoad),
+          function(next) {
+            var grid = t.cq1('nx-coreui-search-result-list'),
+                store = grid.getStore(),
+                model = store.getAt(0);
+
+            t.expect(model).toBeDefined();
+            t.expect(model.get('format')).toEqual('raw');
+            t.expect(model.get('name')).toBe(t.anyStringLike('alphabet.txt'));
+            next();
+          }
+      )
+    }, 300000);
   }, 300000);
 });

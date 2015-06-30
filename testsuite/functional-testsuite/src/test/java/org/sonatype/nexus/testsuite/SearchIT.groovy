@@ -67,6 +67,7 @@ extends FunctionalTestSupport
     CloseableHttpClient client = httpClient()
     setupMaven(client)
     setupNuget(client)
+    setupRaw(client)
   }
 
   CloseableHttpClient httpClient() {
@@ -111,6 +112,21 @@ extends FunctionalTestSupport
         ]
     ))
     publish(httpClient, repository, resolveTestFile('SONATYPE.TEST.1.0.nupkg'), '')
+  }
+
+  void setupRaw(final CloseableHttpClient httpClient) {
+    Repository repository = repositoryManager.create(new Configuration(
+        repositoryName: 'search-test-raw',
+        recipeName: 'raw-hosted',
+        online: true,
+        attributes: [
+            storage: [
+                blobStoreName: BlobStoreManager.DEFAULT_BLOBSTORE_NAME,
+                writePolicy: WritePolicy.ALLOW
+            ]
+        ]
+    ))
+    publish(httpClient, repository, resolveTestFile('alphabet.txt'), 'alphabet.txt')
   }
 
   void publish(final CloseableHttpClient httpClient, final Repository repository, final File file, final String path) {
