@@ -93,7 +93,7 @@ Ext.define('NX.controller.Drilldown', {
     };
 
     // New button
-    componentListener['nx-drilldown button[action=new]'] = {
+    componentListener[me.masters[0] + ' ^ nx-drilldown button[action=new]'] = {
       afterrender: me.bindNewButton
     };
 
