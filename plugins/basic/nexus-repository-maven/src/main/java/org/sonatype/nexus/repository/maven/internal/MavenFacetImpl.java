@@ -26,7 +26,6 @@ import javax.validation.groups.Default;
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.AttributesMap;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
-import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.common.io.TempStreamSupplier;
 import org.sonatype.nexus.repository.FacetSupport;
 import org.sonatype.nexus.repository.config.Configuration;
@@ -38,7 +37,6 @@ import org.sonatype.nexus.repository.maven.MavenPath.HashType;
 import org.sonatype.nexus.repository.maven.MavenPathParser;
 import org.sonatype.nexus.repository.maven.policy.VersionPolicy;
 import org.sonatype.nexus.repository.proxy.CacheInfo;
-import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.AssetBlob;
 import org.sonatype.nexus.repository.storage.Bucket;
@@ -49,15 +47,12 @@ import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.types.HostedType;
 import org.sonatype.nexus.repository.types.ProxyType;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentInfo;
+import org.sonatype.nexus.repository.view.ContentMarshaller;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.hash.HashCode;
 import org.joda.time.DateTime;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -187,22 +182,8 @@ public class MavenFacetImpl
     }
     final Blob blob = tx.requireBlob(asset.requireBlobRef());
     final String contentType = asset.contentType();
-
-    final NestedAttributesMap checksumAttributes = asset.attributes().child(StorageFacet.P_CHECKSUM);
-    final Map<HashAlgorithm, HashCode> hashCodes = Maps.newHashMap();
-    for (HashAlgorithm algorithm : HashType.ALGORITHMS) {
-      final HashCode hashCode = HashCode.fromString(checksumAttributes.require(algorithm.name(), String.class));
-      hashCodes.put(algorithm, hashCode);
-    }
-
-    final CacheInfo cacheInfo = CacheInfo.extract(asset);
-    final ContentInfo contentInfo = ContentInfo.extract(asset);
-
-    final Content result = new Content(new BlobPayload(blob, contentType));
-    result.getAttributes().set(Content.CONTENT_HASH_CODES_MAP, hashCodes);
-    result.getAttributes().set(ContentInfo.class, contentInfo);
-    result.getAttributes().set(CacheInfo.class, cacheInfo);
-    return result;
+    final Content content = new Content(new BlobPayload(blob, contentType));
+    return ContentMarshaller.extract(content, asset, HashType.ALGORITHMS);
   }
 
   @Override
@@ -343,19 +324,13 @@ public class MavenFacetImpl
       throws IOException
   {
     tx.attachBlob(asset, assetBlob);
-
     if (contentAttributes != null) {
-      final ContentInfo contentInfo = contentAttributes.get(ContentInfo.class);
-      if (contentInfo != null) {
-        ContentInfo.apply(asset, contentInfo);
-      }
-      final CacheInfo cacheInfo = contentAttributes.get(CacheInfo.class);
-      if (cacheInfo != null) {
-        CacheInfo.apply(asset, cacheInfo);
-      }
+      ContentMarshaller.apply(asset, contentAttributes);
     }
-    if (!ContentInfo.hasLastModified(asset)) {
-      ContentInfo.apply(asset, new ContentInfo(DateTime.now(), null));
+    if (contentAttributes == null || !contentAttributes.contains(Content.CONTENT_LAST_MODIFIED)) {
+      AttributesMap newAttributes = new AttributesMap();
+      newAttributes.set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
+      ContentMarshaller.apply(asset, newAttributes);
     }
   }
 

@@ -17,7 +17,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentInfo;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Handler;
 import org.sonatype.nexus.repository.view.Payload;
@@ -26,6 +25,7 @@ import org.sonatype.sisu.goodies.common.ComponentSupport;
 
 import com.google.common.net.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
+import org.joda.time.DateTime;
 
 /**
  * A format-neutral content handler for decorating response using {@link Content#getAttributes()} provided attributes.
@@ -46,13 +46,14 @@ public class ContentHeadersHandler
 
     if (response.getStatus().isSuccessful() && payload instanceof Content) {
       final Content content = (Content) payload;
-      final ContentInfo contentInfo = content.getAttributes().get(ContentInfo.class);
-      if (contentInfo != null && contentInfo.getLastModified() != null) {
-        response.getHeaders().set(HttpHeaders.LAST_MODIFIED, DateUtils.formatDate(contentInfo.getLastModified().toDate()));
+      final DateTime lastModified = content.getAttributes().get(Content.CONTENT_LAST_MODIFIED, DateTime.class);
+      if (lastModified != null) {
+        response.getHeaders().set(HttpHeaders.LAST_MODIFIED, DateUtils.formatDate(lastModified.toDate()));
       }
       if (response.getStatus().isSuccessful()) {
-        if (contentInfo != null && contentInfo.getEtag() != null) {
-          response.getHeaders().set(HttpHeaders.ETAG, "\"" + contentInfo.getEtag() + "\"");
+        final String etag = content.getAttributes().get(Content.CONTENT_ETAG, String.class);
+        if (etag != null) {
+          response.getHeaders().set(HttpHeaders.ETAG, "\"" + etag + "\"");
         }
       }
     }

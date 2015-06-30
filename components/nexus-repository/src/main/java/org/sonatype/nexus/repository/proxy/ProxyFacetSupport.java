@@ -27,7 +27,6 @@ import org.sonatype.nexus.repository.config.ConfigurationFacet;
 import org.sonatype.nexus.repository.httpclient.HttpClientFacet;
 import org.sonatype.nexus.repository.negativecache.NegativeCacheFacet;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentInfo;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.HttpEntityPayload;
@@ -194,12 +193,13 @@ public abstract class ProxyFacetSupport
 
     HttpGet request = new HttpGet(config.remoteUrl.resolve(url));
     if (stale != null) {
-      final ContentInfo staleInfo = stale.getAttributes().get(ContentInfo.class);
-      if (staleInfo != null && staleInfo.getLastModified() != null) {
-        request.addHeader(HttpHeaders.IF_MODIFIED_SINCE, DateUtils.formatDate(staleInfo.getLastModified().toDate()));
+      final DateTime lastModified = stale.getAttributes().get(Content.CONTENT_LAST_MODIFIED, DateTime.class);
+      if (lastModified != null) {
+        request.addHeader(HttpHeaders.IF_MODIFIED_SINCE, DateUtils.formatDate(lastModified.toDate()));
       }
-      if (staleInfo != null && staleInfo.getEtag() != null) {
-        request.addHeader(HttpHeaders.IF_NONE_MATCH, "\"" + staleInfo.getEtag() + "\"");
+      final String etag = stale.getAttributes().get(Content.CONTENT_ETAG, String.class);
+      if (etag != null) {
+        request.addHeader(HttpHeaders.IF_NONE_MATCH, "\"" + etag + "\"");
       }
     }
     log.debug("Fetching: {}", request);
@@ -218,11 +218,8 @@ public abstract class ProxyFacetSupport
 
       Payload payload = new HttpEntityPayload(response, entity);
       final Content result = new Content(payload);
-      final ContentInfo contentInfo = new ContentInfo(
-          extractLastModified(request, response.getLastHeader(HttpHeaders.LAST_MODIFIED)),
-          extractETag(response.getLastHeader(HttpHeaders.ETAG))
-      );
-      result.getAttributes().set(ContentInfo.class, contentInfo);
+      result.getAttributes().set(Content.CONTENT_LAST_MODIFIED, extractLastModified(request, response));
+      result.getAttributes().set(Content.CONTENT_ETAG, extractETag(response));
       result.getAttributes().set(CacheInfo.class, cacheInfo);
       return result;
     }
@@ -238,7 +235,8 @@ public abstract class ProxyFacetSupport
    * Extract Last-Modified date from response if possible, or {@code null}.
    */
   @Nullable
-  private DateTime extractLastModified(final HttpGet request, final Header lastModifiedHeader) {
+  private DateTime extractLastModified(final HttpGet request, final HttpResponse response) {
+    final Header lastModifiedHeader = response.getLastHeader(HttpHeaders.LAST_MODIFIED);
     if (lastModifiedHeader != null) {
       try {
         return new DateTime(DateUtils.parseDate(lastModifiedHeader.getValue()).getTime());
@@ -255,7 +253,8 @@ public abstract class ProxyFacetSupport
    * Extract ETag from response if possible, or {@code null}.
    */
   @Nullable
-  private String extractETag(final Header etagHeader) {
+  private String extractETag(final HttpResponse response) {
+    final Header etagHeader = response.getLastHeader(HttpHeaders.ETAG);
     if (etagHeader != null) {
       final String etag = etagHeader.getValue();
       if (!Strings.isNullOrEmpty(etag)) {

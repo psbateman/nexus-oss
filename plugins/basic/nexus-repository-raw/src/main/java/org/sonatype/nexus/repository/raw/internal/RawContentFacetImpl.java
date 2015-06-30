@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.inject.Named;
 
 import org.sonatype.nexus.blobstore.api.Blob;
+import org.sonatype.nexus.common.collect.AttributesMap;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.common.io.TempStreamSupplier;
 import org.sonatype.nexus.repository.FacetSupport;
@@ -32,7 +33,7 @@ import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageFacet.Operation;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentInfo;
+import org.sonatype.nexus.repository.view.ContentMarshaller;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
@@ -112,22 +113,12 @@ public class RawContentFacetImpl
 
             if (payload instanceof Content) {
               final Content content = (Content) payload;
-
-              final ContentInfo contentInfo = content.getAttributes().get(ContentInfo.class);
-              if (contentInfo != null) {
-                ContentInfo.apply(asset, contentInfo);
-              }
-              else {
-                ContentInfo.apply(asset, new ContentInfo(DateTime.now(), null));
-              }
-
-              final CacheInfo cacheInfo = content.getAttributes().get(CacheInfo.class);
-              if (cacheInfo != null) {
-                CacheInfo.apply(asset, cacheInfo);
-              }
+              ContentMarshaller.apply(asset, content.getAttributes());
             }
             else {
-              ContentInfo.apply(asset, new ContentInfo(DateTime.now(), null));
+              AttributesMap newAttributes = new AttributesMap();
+              newAttributes.set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
+              ContentMarshaller.apply(asset, newAttributes);
             }
 
             tx.setBlob(asset, path, streamSupplier.get(), hashAlgorithms, null, payload.getContentType());
@@ -228,8 +219,6 @@ public class RawContentFacetImpl
 
   private Content marshall(final Asset asset, final Blob blob) {
     final Content content = new Content(new BlobPayload(blob, asset.requireContentType()));
-    content.getAttributes().set(ContentInfo.class, ContentInfo.extract(asset));
-    content.getAttributes().set(CacheInfo.class, CacheInfo.extract(asset));
-    return content;
+    return ContentMarshaller.extract(content, asset, hashAlgorithms);
   }
 }

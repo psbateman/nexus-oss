@@ -14,7 +14,6 @@ package org.sonatype.nexus.repository.view.handlers;
 
 import org.sonatype.nexus.repository.http.HttpResponses;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentInfo;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Request;
 import org.sonatype.nexus.repository.view.Response;
@@ -62,7 +61,8 @@ public class ContentHeadersHandlerTest
   @Test
   public void okResponse() throws Exception {
     final Content content = new Content(new StringPayload(payloadString, "text/plain"));
-    content.getAttributes().set(ContentInfo.class, new ContentInfo(now, "etag"));
+    content.getAttributes().set(Content.CONTENT_LAST_MODIFIED, DateTime.now());
+    content.getAttributes().set(Content.CONTENT_ETAG, "etag");
     when(context.proceed()).thenReturn(HttpResponses.ok(content));
     final Response r = subject.handle(context);
     assertThat(r.getStatus().isSuccessful(), is(true));

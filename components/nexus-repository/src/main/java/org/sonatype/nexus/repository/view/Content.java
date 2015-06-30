@@ -14,16 +14,15 @@ package org.sonatype.nexus.repository.view;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.sonatype.nexus.common.collect.AttributesMap;
-import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.repository.util.TypeTokens;
 
 import com.google.common.collect.Maps;
+import org.joda.time.DateTime;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,8 +35,19 @@ public class Content
     implements Payload
 {
   /**
-   * Key of the "hashCodes" attribute of type {@link Map}, with keys {@link HashAlgorithm} and values of {@link
-   * HashCode>}. Use {@link TypeTokens#HASH_CODES_MAP} type token to get it from the attributes.
+   * Key of content "Last-Modified", with type {@link DateTime}.
+   */
+  public static final String CONTENT_LAST_MODIFIED = "last_modified";
+
+  /**
+   * Key of content "ETag", with type of {@link String}.
+   */
+  public static final String CONTENT_ETAG = "etag";
+
+  /**
+   * Key of the "hashCodes" attribute map, with type of {@link TypeTokens#HASH_CODES_MAP}.
+   *
+   * @see TypeTokens#HASH_CODES_MAP
    */
   public static final String CONTENT_HASH_CODES_MAP = "hashCodesMap";
 
