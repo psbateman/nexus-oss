@@ -278,12 +278,16 @@ Ext.define('NX.controller.Drilldown', {
    */
   navigateTo: function (bookmark) {
     var me = this,
-        feature = me.getFeature(),
         lists = Ext.ComponentQuery.query('nx-drilldown-master'),
         list_ids = bookmark.getSegments().slice(1),
         index, list_ids, modelId, store;
 
-    if (feature && lists.length && list_ids.length) {
+    // Don’t navigate if the feature view hasn’t loaded
+    if (!me.getFeature || !me.getFeature()) {
+      return;
+    }
+
+    if (lists.length && list_ids.length) {
       //<if debug>
       me.logDebug('Navigate to: ' + bookmark.getSegments().join(':'));
       //</if>
