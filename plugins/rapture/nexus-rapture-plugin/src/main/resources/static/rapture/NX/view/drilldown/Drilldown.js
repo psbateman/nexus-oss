@@ -106,11 +106,9 @@ Ext.define('NX.view.drilldown.Drilldown', {
    * Create a new drilldown item
    */
   createDrilldownItem: function(index, browsePanel, createPanel) {
-    var me = this;
-
     return {
       xtype: 'nx-drilldown-item',
-      itemClass: NX.Icons.cls(me.iconName) + (index === 0 ? '-x32' : '-x16'),
+      itemClass: NX.Icons.cls(this.iconName) + (index === 0 ? '-x32' : '-x16'),
       items: [
         {
           xtype: 'container',
