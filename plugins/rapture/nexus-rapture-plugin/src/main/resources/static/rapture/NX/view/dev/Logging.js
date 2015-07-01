@@ -40,11 +40,6 @@ Ext.define('NX.view.dev.Logging', {
     { text: 'timestamp', dataIndex: 'timestamp', width: 130 }
   ],
 
-  //selType: 'rowmodel',
-  //selModel: {
-  //  mode: 'MULTI'
-  //},
-
   tbar: [
     {
       xtype: 'button',
