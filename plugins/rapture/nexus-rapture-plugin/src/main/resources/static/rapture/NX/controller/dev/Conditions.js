@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -49,6 +49,9 @@ Ext.define('NX.controller.dev.Conditions', {
     }
   ],
 
+  /**
+   * @override
+   */
   init: function () {
     var me = this;
 
@@ -83,6 +86,9 @@ Ext.define('NX.controller.dev.Conditions', {
     });
   },
 
+  /**
+   * @override
+   */
   onLaunch: function () {
     var me = this,
         devPanelTab = me.getDevPanelTabs();

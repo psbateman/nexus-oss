@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -21,6 +21,7 @@
 Ext.define('NX.controller.SettingsForm', {
   extend: 'Ext.app.Controller',
   requires: [
+    'Ext.ComponentQuery',
     'NX.Messages'
   ],
 
@@ -72,8 +73,9 @@ Ext.define('NX.controller.SettingsForm', {
   },
 
   /**
-   * @private
    * Loads the form if form's api load function is defined.
+   *
+   * @private
    */
   loadForm: function (form, options) {
     var me = this;
@@ -124,8 +126,9 @@ Ext.define('NX.controller.SettingsForm', {
   },
 
   /**
-   * @private
    * Calculates title based on form's {NX.view.SettingsForm#getSettingsFormSuccessMessage}.
+   *
+   * @private
    * @param {NX.view.SettingsForm} form
    * @param {Ext.form.action.Action} action
    */
@@ -145,8 +148,9 @@ Ext.define('NX.controller.SettingsForm', {
   },
 
   /**
-   * @private
    * Toggle editable on settings form hen editable condition is satisfied (if specified).
+   *
+   * @private
    * @param {NX.view.SettingsForm} form
    */
   bindEditableCondition: function (form) {
@@ -167,9 +171,10 @@ Ext.define('NX.controller.SettingsForm', {
   },
 
   /**
-   * @private
    * Enable/Disable components marked with a "groupBind" property by checking that all fields marked with "bindGroup"
    * that matches, are valid.
+   *
+   * @private
    * @param {Ext.form.field.Base} field a field with a "bindGroup" property. "bindGroup" can be a space separated list of
    * groups
    */

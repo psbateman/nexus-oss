@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -34,8 +34,9 @@ Ext.define('NX.State', {
 
     me.addEvents(
         /**
-         * @event changed
          * Fires when any of application context values changes.
+         *
+         * @event changed
          * @param {NX.State} this
          */
         'changed'
@@ -121,7 +122,7 @@ Ext.define('NX.State', {
   },
 
   /**
-   * Return status.edition
+   * Return status.edition.
    *
    * @public
    * @returns {string}
@@ -131,7 +132,8 @@ Ext.define('NX.State', {
   },
 
   /**
-   * Return whether or not we're receiving from the server
+   * Return whether or not we're receiving from the server.
+   *
    * @returns {boolean}
    */
   isReceiving: function() {
