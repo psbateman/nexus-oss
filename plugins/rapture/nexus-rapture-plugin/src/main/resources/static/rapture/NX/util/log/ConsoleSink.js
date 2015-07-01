@@ -37,7 +37,7 @@ Ext.define('NX.util.log.ConsoleSink', {
   /**
    * @override
    */
-  handle: function (event) {
+  receive: function (event) {
     NX.Console.log(event.level, [event.logger, event.message]);
   }
 });

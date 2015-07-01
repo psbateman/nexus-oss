@@ -47,20 +47,8 @@ Ext.define('NX.util.log.Sink', {
   /**
    * @public
    * @param {NX.model.LogEvent} event
-   * @see #handle
    */
   receive: function(event) {
-    if (this.enabled) {
-      this.handle(event);
-    }
-  },
-
-  /**
-   * Sub-class should override to provide processing of the event when sink is enabled.
-   *
-   * @private
-   */
-  handle: function(event) {
     throw 'abstract-method';
   }
 });

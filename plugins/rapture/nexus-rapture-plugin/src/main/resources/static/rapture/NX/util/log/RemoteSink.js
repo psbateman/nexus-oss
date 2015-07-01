@@ -34,7 +34,7 @@ Ext.define('NX.util.log.RemoteSink', {
   /**
    * @override
    */
-  handle: function (event) {
+  receive: function (event) {
     NX.direct.rapture_LogEvent.recordEvent(event);
   }
 });

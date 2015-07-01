@@ -45,7 +45,8 @@ Ext.define('NX.controller.Logging', {
   /**
    * Logging threshold.
    *
-   * @property {string}
+   * @private
+   * @property {String}
    */
   threshold: 'debug',
 
@@ -53,8 +54,13 @@ Ext.define('NX.controller.Logging', {
    * @override
    */
   init: function () {
+    // record events in the LogEvent store
     this.sinks.push(Ext.create('NX.util.log.StoreSink', this.getStore('LogEvent')));
+
+    // maybe record events in the browser console
     this.sinks.push(NX.util.log.ConsoleSink);
+
+    // maybe remote events to server
     this.sinks.push(NX.util.log.RemoteSink);
   },
 
@@ -127,9 +133,11 @@ Ext.define('NX.controller.Logging', {
       return;
     }
 
-    // pass events to all sinks
+    // pass events to all enabled sinks
     for (i = 0; i < me.sinks.length; i++) {
-      me.sinks[i].receive(event);
+      if (me.sinks[i].enabled) {
+        me.sinks[i].receive(event);
+      }
     }
   }
 });

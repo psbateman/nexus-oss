@@ -39,7 +39,7 @@ Ext.define('NX.util.log.StoreSink', {
   /**
    * @override
    */
-  handle: function (event) {
+  receive: function (event) {
     this.store.add(event);
   }
 });
