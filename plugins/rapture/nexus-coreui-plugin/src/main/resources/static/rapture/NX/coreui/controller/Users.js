@@ -183,14 +183,14 @@ Ext.define('NX.coreui.controller.Users', {
     if (Ext.isDefined(model)) {
       if (model.get('external')) {
         if (!externalSettingsPanel) {
-          me.getFeature().addTab({ xtype: 'nx-coreui-user-settings-external', title: 'Settings', weight: 10 });
+          me.addTab({ xtype: 'nx-coreui-user-settings-external', title: 'Settings', weight: 10 });
           externalSettingsPanel = me.getExternalSettings();
         }
         externalSettingsPanel.loadRecord(model)
       }
       else {
         if (!settingsPanel) {
-          me.getFeature().addTab({ xtype: 'nx-coreui-user-settings', title: 'Settings', weight: 10 });
+          me.addTab({ xtype: 'nx-coreui-user-settings', title: 'Settings', weight: 10 });
           settingsPanel = me.getSettings();
         }
         settingsPanel.loadRecord(model)
@@ -198,12 +198,12 @@ Ext.define('NX.coreui.controller.Users', {
 
       if (model.get('external')) {
         if (settingsPanel) {
-          me.getFeature().removeTab(settingsPanel);
+          me.removeTab(settingsPanel);
         }
       }
       else {
         if (externalSettingsPanel) {
-          me.getFeature().removeTab(externalSettingsPanel);
+          me.removeTab(externalSettingsPanel);
         }
       }
     }

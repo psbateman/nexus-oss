@@ -156,13 +156,13 @@ Ext.define('NX.coreui.controller.Tasks', {
       taskTypeModel = me.getStore('TaskType').getById(model.get('typeId'));
       if (taskTypeModel) {
         if (!settings) {
-          me.getFeature().addTab({ xtype: 'nx-coreui-task-settings', title: NX.I18n.get('Tasks_Settings_Title'), weight: 20 });
+          me.addTab({ xtype: 'nx-coreui-task-settings', title: NX.I18n.get('Tasks_Settings_Title'), weight: 20 });
         }
         me.showSettings(model);
       }
       else {
         if (settings) {
-          me.getFeature().removeTab(settings);
+          me.removeTab(settings);
         }
       }
     }
