@@ -229,6 +229,8 @@ Ext.define('NX.controller.Drilldown', {
    * @param cmp An optional component to load
    */
   loadCreateWizard: function (index, animate, cmp) {
+    var me = this;
+
     // Reset all non-root bookmarks
     for (var i = 1; i <= index; ++i) {
       me.setItemBookmark(i, null);
