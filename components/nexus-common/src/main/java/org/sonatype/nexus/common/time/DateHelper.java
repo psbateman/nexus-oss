@@ -27,37 +27,16 @@ public class DateHelper
 {
   @Nullable
   public static DateTime toDateTime(@Nullable final Date date) {
-    return toDateTime(date, (DateTime) null);
-  }
-
-  @Nullable
-  public static DateTime toDateTime(@Nullable final Date date, @Nullable final Date defaultValue) {
-    return toDateTime(date, toDateTime(defaultValue));
-  }
-
-  @Nullable
-  public static DateTime toDateTime(@Nullable final Date date, @Nullable final DateTime defaultValue) {
     if (date == null) {
-      return defaultValue;
+      return null;
     }
     return new DateTime(date.getTime());
   }
 
-
   @Nullable
   public static Date toDate(@Nullable final DateTime dateTime) {
-    return toDate(dateTime, (Date) null);
-  }
-
-  @Nullable
-  public static Date toDate(@Nullable final DateTime dateTime, @Nullable DateTime defaultValue) {
-    return toDate(dateTime, toDate(defaultValue));
-  }
-
-  @Nullable
-  public static Date toDate(@Nullable final DateTime dateTime, @Nullable Date defaultValue) {
     if (dateTime == null) {
-      return defaultValue;
+      return null;
     }
     return dateTime.toDate();
   }
