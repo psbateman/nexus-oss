@@ -67,8 +67,9 @@ Ext.define('NX.controller.Content', {
   },
 
   /**
-   * @private
    * Update content to selected feature view.
+   *
+   * @private
    * @param {NX.model.Feature} feature selected feature
    */
   onFeatureSelected: function (feature) {
@@ -89,7 +90,7 @@ Ext.define('NX.controller.Content', {
     }
     me.mon(cmp, 'destroy', function () {
       //<if debug>
-      me.logDebug('Destroyed: ' + cmp.self.getName());
+      me.logTrace('Destroyed:', cmp.self.getName());
       //</if>
     });
 
@@ -122,7 +123,7 @@ Ext.define('NX.controller.Content', {
     cmp.fireEvent('activate', cmp);
 
     //<if debug>
-    me.logDebug('Content changed to: ' + text + ' (' + cmp.self.getName() + ')');
+    me.logDebug('Content changed to:', text, '(' + cmp.self.getName() + ')');
     //</if>
   }
 
