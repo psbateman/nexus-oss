@@ -29,13 +29,16 @@ Ext.define('NX.coreui.view.search.SearchFeature', {
   masters: [
     {
       xtype: 'panel',
-      layout: 'border',
+      layout: {
+        type: 'vbox',
+        align: 'stretch',
+        pack: 'start'
+      },
       items: [
         {
           xtype: 'panel',
           itemId: 'criteria',
 
-          region: 'north',
           header: false,
 
           style: {
@@ -58,14 +61,13 @@ Ext.define('NX.coreui.view.search.SearchFeature', {
         },
         {
           xtype: 'nx-coreui-search-result-list',
-          region: 'center',
+          flex: 1,
           header: false
         }
       ]
     },
     {
       xtype: 'panel',
-      region: 'center',
       layout: {
         type: 'vbox',
         align: 'stretch',
