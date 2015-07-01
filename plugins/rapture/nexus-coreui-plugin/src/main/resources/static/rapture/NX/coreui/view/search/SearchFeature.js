@@ -21,9 +21,6 @@ Ext.define('NX.coreui.view.search.SearchFeature', {
   extend: 'NX.view.drilldown.Drilldown',
   alias: 'widget.nx-coreui-searchfeature',
 
-  // TODO: Needed?
-  itemId: 'searchfeature',
-
   iconName: 'search-default',
 
   masters: [

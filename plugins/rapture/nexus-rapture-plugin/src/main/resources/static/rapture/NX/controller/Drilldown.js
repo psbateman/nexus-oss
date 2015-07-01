@@ -412,15 +412,9 @@ Ext.define('NX.controller.Drilldown', {
   syncSizeToOwner: function () {
     var me = this,
       drilldown = me.getDrilldown(),
-      owner,
-      container;
+      owner = drilldown.ownerCt.body.el,
+      container = drilldown.down('container');
 
-    if (!drilldown) {
-      return;
-    }
-
-    owner = drilldown.ownerCt.body.el;
-    container = drilldown.down('container');
     container.setSize(owner.getWidth() * container.items.length, owner.getHeight());
     me.slidePanels(me.currentIndex, false);
   },
