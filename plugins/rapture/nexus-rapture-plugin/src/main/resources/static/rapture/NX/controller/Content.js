@@ -59,7 +59,7 @@ Ext.define('NX.controller.Content', {
         },
         'nx-feature-content nx-drilldown': {
           afterrender: function(obj) {
-            obj.fireEvent('syncsize');
+            obj.fireEvent('resetdrilldown');
           }
         }
       }

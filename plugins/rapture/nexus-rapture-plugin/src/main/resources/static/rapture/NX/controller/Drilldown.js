@@ -88,7 +88,11 @@ Ext.define('NX.controller.Drilldown', {
 
     // Drilldown
     componentListener[me.masters[0] + ' ^ nx-drilldown'] = {
-      syncsize: me.syncSizeToOwner
+      syncsize: me.syncSizeToOwner,
+      resetdrilldown: function() {
+        me.currentIndex = 0;
+        me.syncSizeToOwner();
+      }
     };
 
     // New button
@@ -374,25 +378,6 @@ Ext.define('NX.controller.Drilldown', {
         }
     );
   },
-
-  /**
-   * Create an event handler so the panel will resize correctly when the window does
-   *
-   * @override
-   */
-  /*bindDrilldownPanel: function (drilldown) {
-    var me = this;
-
-    me.currentIndex = 0;
-
-    if (drilldown.ownerCt) {
-      me.relayEvents(drilldown.ownerCt, ['resize', 'afterlayout']);
-      me.on({
-        resize: me.syncSizeToOwner,
-        afterlayout: me.syncSizeToOwner
-      });
-    }
-  },*/
 
   // Constants which represent card indexes
   BROWSE_INDEX: 0,
