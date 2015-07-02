@@ -75,7 +75,5 @@ Ext.define('NX.controller.dev.Logging', {
         }
       }
     });
-
-    // TODO: automatically scroll to bottom of event list, how can we do that?
   }
 });
