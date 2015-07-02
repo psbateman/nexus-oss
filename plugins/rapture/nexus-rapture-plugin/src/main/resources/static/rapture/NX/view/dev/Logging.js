@@ -89,7 +89,6 @@ Ext.define('NX.view.dev.Logging', {
       mouseWheelEnabled: false,
       checkChangeBuffer: 1000,
       hideTrigger: true,
-      saveDelay: 5000,
       minValue: -1,
       maxValue: 999,
       value: 200

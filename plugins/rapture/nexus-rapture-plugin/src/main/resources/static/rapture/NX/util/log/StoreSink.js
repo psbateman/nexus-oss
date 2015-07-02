@@ -59,16 +59,6 @@ Ext.define('NX.util.log.StoreSink', {
   },
 
   /**
-   * Returns the size of the store, irregardless of filtering.
-   *
-   * @private
-   * @returns {Number}
-   */
-  size: function () {
-    return this.store.snapshot ? this.store.snapshot.getCount() : this.store.getCount();
-  },
-
-  /**
    * Array of ordered records for shrinking.
    *
    * @private
@@ -100,7 +90,7 @@ Ext.define('NX.util.log.StoreSink', {
    */
   shrink: function () {
     // calculate number of records to purge
-    var remove = this.size() - this.maxSize;
+    var remove = this.records.length - this.maxSize;
 
     // maybe purge records
     if (remove > 0) {
