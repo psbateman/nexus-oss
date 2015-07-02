@@ -54,8 +54,9 @@ Ext.define('NX.controller.Logging', {
    * @override
    */
   init: function () {
-    // record events in the LogEvent store
-    this.sinks.push(Ext.create('NX.util.log.StoreSink', this.getStore('LogEvent')));
+    // Attach store sink to store; record events in the LogEvent store
+    NX.util.log.StoreSink.attach(this.getStore('LogEvent'));
+    this.sinks.push(NX.util.log.StoreSink);
 
     // maybe record events in the browser console
     this.sinks.push(NX.util.log.ConsoleSink);

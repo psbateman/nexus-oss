@@ -34,10 +34,10 @@ Ext.define('NX.view.dev.Logging', {
   stateId: 'nx-dev-logging',
 
   columns: [
-    { text: 'level', dataIndex: 'level' },
-    { text: 'logger', dataIndex: 'logger', flex: 1 },
-    { text: 'message', dataIndex: 'message', flex: 3 },
-    { text: 'timestamp', dataIndex: 'timestamp', width: 130 }
+    {text: 'level', dataIndex: 'level'},
+    {text: 'logger', dataIndex: 'logger', flex: 1},
+    {text: 'message', dataIndex: 'message', flex: 3},
+    {text: 'timestamp', dataIndex: 'timestamp', width: 130}
   ],
 
   tbar: [
@@ -73,6 +73,26 @@ Ext.define('NX.view.dev.Logging', {
       xtype: 'checkbox',
       itemId: 'remote',
       boxLabel: 'Remote events'
+    },
+    '-',
+    {
+      xtype: 'label',
+      text: 'Max size:'
+    },
+    {
+      xtype: 'numberfield',
+      itemId: 'maxSize',
+      width: 50,
+      allowDecimals: false,
+      allowExponential: false,
+      keyNavEnabled: false,
+      mouseWheelEnabled: false,
+      checkChangeBuffer: 1000,
+      hideTrigger: true,
+      saveDelay: 5000,
+      minValue: -1,
+      maxValue: 999,
+      value: 200
     }
   ],
 

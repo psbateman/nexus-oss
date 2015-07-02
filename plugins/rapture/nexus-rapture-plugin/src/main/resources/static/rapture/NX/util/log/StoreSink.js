@@ -19,6 +19,10 @@
  */
 Ext.define('NX.util.log.StoreSink', {
   extend: 'NX.util.log.Sink',
+  singleton: true,
+  requires: [
+    'NX.Assert'
+  ],
 
   /**
    * Reference to the event store.
@@ -29,17 +33,79 @@ Ext.define('NX.util.log.StoreSink', {
   store: undefined,
 
   /**
-   * @constructor
+   * Maximum records to retain in the store.
+   *
+   * @property {Number}
+   */
+  maxSize: 200,
+
+  /**
+   * @public
    * @param {NX.store.LogEvent} store
    */
-  constructor: function (store) {
+  attach: function (store) {
     this.store = store;
   },
+
+  /**
+   * @public
+   * @param {Number} maxSize
+   */
+  setMaxSize: function (maxSize) {
+    this.maxSize = maxSize;
+
+    // log here should induce shrinkage, nothing more to do
+    this.logDebug('Max size:', maxSize);
+  },
+
+  /**
+   * Returns the size of the store, irregardless of filtering.
+   *
+   * @private
+   * @returns {Number}
+   */
+  size: function () {
+    return this.store.snapshot ? this.store.snapshot.getCount() : this.store.getCount();
+  },
+
+  /**
+   * Array of ordered records for shrinking.
+   *
+   * @private
+   * @property {NX.model.LogEvent[]}
+   */
+  records: [],
 
   /**
    * @override
    */
   receive: function (event) {
-    this.store.add(event);
+    //<if assert>
+    NX.Assert.assert(this.store, 'Store not attached');
+    //</if>
+
+    var record = this.store.add(event)[0]; // only 1 record, pick off first
+
+    // maybe shrink
+    this.shrink();
+
+    // track records for shrinkage
+    this.records.push(record);
+  },
+
+  /**
+   * Shrink the store after we breach maximum size.
+   *
+   * @private
+   */
+  shrink: function () {
+    // calculate number of records to purge
+    var remove = this.size() - this.maxSize;
+
+    // maybe purge records
+    if (remove > 0) {
+      var purged = this.records.splice(0, remove);
+      this.store.remove(purged);
+    }
   }
 });

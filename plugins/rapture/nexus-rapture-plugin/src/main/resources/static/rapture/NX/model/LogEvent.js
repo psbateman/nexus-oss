@@ -24,5 +24,6 @@ Ext.define('NX.model.LogEvent', {
     { name: 'logger', type: 'string' },
     { name: 'level', type: 'string' },
     { name: 'message', type: 'string' }
-  ]
+  ],
+  idgen: 'sequential'
 });

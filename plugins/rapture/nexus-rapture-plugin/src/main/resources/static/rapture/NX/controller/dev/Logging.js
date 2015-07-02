@@ -20,6 +20,7 @@
 Ext.define('NX.controller.dev.Logging', {
   extend: 'Ext.app.Controller',
   requires: [
+    'NX.util.log.StoreSink',
     'NX.util.log.ConsoleSink',
     'NX.util.log.RemoteSink'
   ],
@@ -57,6 +58,11 @@ Ext.define('NX.controller.dev.Logging', {
         'nx-dev-logging checkbox[itemId=remote]': {
           change: function(checkbox) {
             NX.util.log.RemoteSink.setEnabled(checkbox.getValue());
+          }
+        },
+        'nx-dev-logging numberfield[itemId=maxSize]': {
+          change: function(field) {
+            NX.util.log.StoreSink.setMaxSize(field.getValue());
           }
         },
         'nx-dev-logging combobox[itemId=threshold]': {
