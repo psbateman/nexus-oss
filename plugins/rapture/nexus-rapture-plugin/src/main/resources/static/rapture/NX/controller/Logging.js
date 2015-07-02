@@ -28,6 +28,7 @@ Ext.define('NX.controller.Logging', {
     'NX.util.log.RemoteSink'
   ],
   mixins: {
+    stateful: 'Ext.state.Stateful',
     logAware: 'NX.LogAware'
   },
 
@@ -52,6 +53,19 @@ Ext.define('NX.controller.Logging', {
   threshold: 'debug',
 
   /**
+   * @constructor
+   */
+  constructor: function () {
+    this.mixins.stateful.constructor.call(this, {
+      stateful: true,
+      stateId: this.self.getName()
+    });
+
+    this.callParent(arguments);
+    this.initState();
+  },
+
+  /**
    * @override
    */
   init: function () {
@@ -69,6 +83,16 @@ Ext.define('NX.controller.Logging', {
    */
   onLaunch: function () {
     NX.Log.attach(this);
+  },
+
+  /**
+   * @override
+   * @return {Object}
+   */
+  getState: function() {
+    return {
+      threshold: this.threshold
+    };
   },
 
   /**
@@ -99,6 +123,7 @@ Ext.define('NX.controller.Logging', {
    */
   setThreshold: function (threshold) {
     this.threshold = threshold;
+    this.saveState();
   },
 
   /**
