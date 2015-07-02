@@ -70,7 +70,7 @@ Ext.define('NX.controller.Permissions', {
         rawData = NX.State.getValue('permissions');
 
     //<if debug>
-    me.logTrace('Initial permissions:', Ext.encode(rawData));
+    me.logTrace('Initial permissions:', rawData);
     //</if>
 
     me.getStore('Permission').loadRawData(rawData, false);

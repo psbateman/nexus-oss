@@ -19,6 +19,10 @@
  */
 Ext.define('NX.view.dev.Logging', {
   extend: 'Ext.grid.Panel',
+  requires: [
+    'NX.Log'
+  ],
+
   alias: 'widget.nx-dev-logging',
 
   title: 'Logging',
@@ -36,7 +40,14 @@ Ext.define('NX.view.dev.Logging', {
   columns: [
     {text: 'level', dataIndex: 'level'},
     {text: 'logger', dataIndex: 'logger', flex: 1},
-    {text: 'message', dataIndex: 'message', flex: 3},
+    {
+      text: 'message',
+      dataIndex: 'message',
+      flex: 3,
+      renderer: function(value) {
+        return NX.Log.renderMessage(value);
+      }
+    },
     {text: 'timestamp', dataIndex: 'timestamp', width: 130}
   ],
 
@@ -96,6 +107,21 @@ Ext.define('NX.view.dev.Logging', {
   ],
 
   plugins: [
-    'gridfilterbox'
+    {
+      ptype: 'rowexpander',
+      rowBodyTpl: Ext.create('Ext.XTemplate',
+          '<table class="nx-rowexpander">',
+          '<tr>',
+          '<td class="x-selectable">{[this.render(values)]}</td>',
+          '</tr>',
+          '</table>',
+          {
+            compiled: true,
+            render: function (values) {
+              return Ext.encode(values.message);
+            }
+          })
+    },
+    {ptype: 'gridfilterbox'}
   ]
 });
