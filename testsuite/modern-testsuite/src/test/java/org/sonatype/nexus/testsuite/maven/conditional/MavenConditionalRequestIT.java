@@ -82,15 +82,7 @@ public class MavenConditionalRequestIT
   @Inject
   private LogManager logManager;
 
-  private Repository mavenCentral;
-
-  private Repository mavenSnapshots;
-
   private Server upstream;
-
-  private Maven2Client centralClient;
-
-  private Maven2Client snapshotsClient;
 
   @Before
   public void setupMavenDebugStorage() {
@@ -115,22 +107,6 @@ public class MavenConditionalRequestIT
             },
             Behaviours.content("This is a text", "text/plain"))
         .start();
-
-    Repository repo = repositoryManager.get("maven-central");
-    assertThat(repo, notNullValue());
-    Configuration mavenCentralConfiguration = repo.getConfiguration();
-    mavenCentralConfiguration.attributes("proxy").set("remoteUrl", "http://localhost:" + upstream.getPort() + "/");
-    mavenCentral = repositoryManager.update(mavenCentralConfiguration);
-    centralClient = new Maven2Client(HttpClients.custom().build(), HttpClientContext.create(),
-        resolveUrl(nexusUrl, "/repository/" + mavenCentral.getName() + "/").toURI());
-
-    mavenSnapshots = repositoryManager.get("maven-snapshots");
-    AuthScope scope = new AuthScope(nexusUrl.getHost(), -1);
-    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-    credentialsProvider.setCredentials(scope, new UsernamePasswordCredentials("admin", "admin123"));
-    snapshotsClient = new Maven2Client(HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build(),
-        HttpClientContext.create(),
-        resolveUrl(nexusUrl, "/repository/" + mavenSnapshots.getName() + "/").toURI());
   }
 
   @After
@@ -144,6 +120,14 @@ public class MavenConditionalRequestIT
 
   @Test
   public void conditionalGet() throws Exception {
+    Repository mavenCentral = repositoryManager.get("maven-central");
+    assertThat(mavenCentral, notNullValue());
+    Configuration mavenCentralConfiguration = mavenCentral.getConfiguration();
+    mavenCentralConfiguration.attributes("proxy").set("remoteUrl", "http://localhost:" + upstream.getPort() + "/");
+    mavenCentral = repositoryManager.update(mavenCentralConfiguration);
+    Maven2Client centralClient = new Maven2Client(HttpClients.custom().build(), HttpClientContext.create(),
+        resolveUrl(nexusUrl, "/repository/" + mavenCentral.getName() + "/").toURI());
+
     HttpResponse response;
 
     response = centralClient.get(RELEASE_ARTIFACT_PATH);
@@ -163,7 +147,50 @@ public class MavenConditionalRequestIT
   }
 
   @Test
+  public void conditionalGetViaGroup() throws Exception {
+    // redirect maven-central
+    {
+      Repository mavenCentral = repositoryManager.get("maven-central");
+      assertThat(mavenCentral, notNullValue());
+      Configuration mavenCentralConfiguration = mavenCentral.getConfiguration();
+      mavenCentralConfiguration.attributes("proxy").set("remoteUrl", "http://localhost:" + upstream.getPort() + "/");
+      repositoryManager.update(mavenCentralConfiguration);
+    }
+
+    // get public group and create client for it
+    Repository mavenPublic = repositoryManager.get("maven-public");
+    assertThat(mavenPublic, notNullValue());
+    Maven2Client publicClient = new Maven2Client(HttpClients.custom().build(), HttpClientContext.create(),
+        resolveUrl(nexusUrl, "/repository/" + mavenPublic.getName() + "/").toURI());
+
+    HttpResponse response;
+
+    response = publicClient.get(RELEASE_ARTIFACT_PATH);
+    EntityUtils.consume(response.getEntity());
+
+    assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+
+    response = publicClient.getIfNewer(RELEASE_ARTIFACT_PATH, DateUtils.parseDate(LAST_MODIFIED_VALUE));
+    EntityUtils.consume(response.getEntity());
+
+    assertThat(response.getStatusLine().getStatusCode(), equalTo(304));
+
+    response = publicClient.getIfNoneMatch(RELEASE_ARTIFACT_PATH, ETAG_VALUE);
+    EntityUtils.consume(response.getEntity());
+
+    assertThat(response.getStatusLine().getStatusCode(), equalTo(304));
+  }
+
+  @Test
   public void conditionalPut() throws Exception {
+    Repository mavenSnapshots = repositoryManager.get("maven-snapshots");
+    AuthScope scope = new AuthScope(nexusUrl.getHost(), -1);
+    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+    credentialsProvider.setCredentials(scope, new UsernamePasswordCredentials("admin", "admin123"));
+    Maven2Client snapshotsClient = new Maven2Client(HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build(),
+        HttpClientContext.create(),
+        resolveUrl(nexusUrl, "/repository/" + mavenSnapshots.getName() + "/").toURI());
+
     HttpResponse response;
 
     final String payload = "This is a payload";
