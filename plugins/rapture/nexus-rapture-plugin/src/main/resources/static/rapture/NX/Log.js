@@ -59,9 +59,9 @@ Ext.define('NX.Log', {
    * Record a log event.
    *
    * @public
-   * @param {string} level
-   * @param {string} logger
-   * @param {string} message
+   * @param {String} level
+   * @param {String} logger
+   * @param {String/Array} message
    */
   recordEvent: function (level, logger, message) {
     var me = this,
