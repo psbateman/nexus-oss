@@ -10,22 +10,29 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.rapture;
+package org.sonatype.nexus.transaction;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Implemented by components that provide state values/commands.
+ * Marks methods that require transactional behaviour.
  *
  * @since 3.0
  */
-public interface StateContributor
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
+public @interface Transactional
 {
   /**
-   * Returns mapping of state-id to state-value (state-value can be null).
+   * List of exceptions to not rollback on.
    */
-  @Nullable
-  Map<String, Object> getState();
+  Class<? extends Exception>[] ignore() default {};
+
+  /**
+   * List of exceptions to retry the method on.
+   */
+  Class<? extends Exception>[] retryOn() default {};
 }

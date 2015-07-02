@@ -10,22 +10,22 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.rapture;
+package org.sonatype.nexus.transaction;
 
-import java.util.Map;
+import org.sonatype.nexus.common.guice.AbstractInterceptorModule;
 
-import javax.annotation.Nullable;
+import com.google.inject.matcher.Matchers;
 
 /**
- * Implemented by components that provide state values/commands.
+ * Registers transactional method behaviour with Guice.
  *
  * @since 3.0
  */
-public interface StateContributor
+public final class TransactionModule
+    extends AbstractInterceptorModule
 {
-  /**
-   * Returns mapping of state-id to state-value (state-value can be null).
-   */
-  @Nullable
-  Map<String, Object> getState();
+  @Override
+  protected void configure() {
+    bindInterceptor(Matchers.any(), Matchers.annotatedWith(Transactional.class), new TransactionInterceptor());
+  }
 }

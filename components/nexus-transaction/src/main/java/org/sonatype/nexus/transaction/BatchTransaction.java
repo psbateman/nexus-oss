@@ -10,22 +10,47 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.rapture;
-
-import java.util.Map;
-
-import javax.annotation.Nullable;
+package org.sonatype.nexus.transaction;
 
 /**
- * Implemented by components that provide state values/commands.
+ * {@link Transaction} that stays open until the batch is complete.
  *
  * @since 3.0
  */
-public interface StateContributor
+final class BatchTransaction
+    implements Transaction
 {
-  /**
-   * Returns mapping of state-id to state-value (state-value can be null).
-   */
-  @Nullable
-  Map<String, Object> getState();
+  final Transaction delegate;
+
+  BatchTransaction(final Transaction delegate) {
+    this.delegate = delegate;
+  }
+
+  public void begin() throws Exception {
+    delegate.begin();
+  }
+
+  public void commit() throws Exception {
+    delegate.commit();
+  }
+
+  public void rollback() throws Exception {
+    delegate.rollback();
+  }
+
+  public boolean isActive() {
+    return delegate.isActive();
+  }
+
+  public boolean allowRetry() {
+    return delegate.allowRetry();
+  }
+
+  public void close() throws Exception {
+    // no-op
+  }
+
+  public void closeBatch() throws Exception {
+    delegate.close();
+  }
 }
