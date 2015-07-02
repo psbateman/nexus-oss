@@ -21,6 +21,7 @@
 Ext.define('NX.controller.Logging', {
   extend: 'Ext.app.Controller',
   requires: [
+    'Ext.util.MixedCollection',
     'NX.Log',
     'NX.util.log.StoreSink',
     'NX.util.log.ConsoleSink',
@@ -38,9 +39,9 @@ Ext.define('NX.controller.Logging', {
    * Array of sinks to receive events.
    *
    * @private
-   * @property {NX.util.log.Sink[]}
+   * @property {Ext.util.MixedCollection}
    */
-  sinks: [],
+  sinks: Ext.create('Ext.util.MixedCollection'),
 
   /**
    * Logging threshold.
@@ -54,15 +55,11 @@ Ext.define('NX.controller.Logging', {
    * @override
    */
   init: function () {
-    // Attach store sink to store; record events in the LogEvent store
-    NX.util.log.StoreSink.attach(this.getStore('LogEvent'));
-    this.sinks.push(NX.util.log.StoreSink);
-
-    // maybe record events in the browser console
-    this.sinks.push(NX.util.log.ConsoleSink);
-
-    // maybe remote events to server
-    this.sinks.push(NX.util.log.RemoteSink);
+    this.sinks.addAll({
+      store: Ext.create('NX.util.log.StoreSink', this.getStore('LogEvent')),
+      console: Ext.create('NX.util.log.ConsoleSink'),
+      remote: Ext.create('NX.util.log.RemoteSink')
+    });
   },
 
   /**
@@ -72,6 +69,16 @@ Ext.define('NX.controller.Logging', {
    */
   onLaunch: function () {
     NX.Log.attach(this);
+  },
+
+  /**
+   * Returns sink by name, or undefined.
+   *
+   * @public
+   * @param {String} name
+   */
+  getSink: function(name) {
+    return this.sinks.getByKey(name);
   },
 
   /**
@@ -127,18 +134,16 @@ Ext.define('NX.controller.Logging', {
    * @param event
    */
   recordEvent: function (event) {
-    var me = this, i;
-
     // ignore events that do not exceed threshold
-    if (!me.exceedsThreshold(event.level)) {
+    if (!this.exceedsThreshold(event.level)) {
       return;
     }
 
     // pass events to all enabled sinks
-    for (i = 0; i < me.sinks.length; i++) {
-      if (me.sinks[i].enabled) {
-        me.sinks[i].receive(event);
+    this.sinks.each(function (sink) {
+      if (sink.enabled) {
+        sink.receive(event);
       }
-    }
+    });
   }
 });

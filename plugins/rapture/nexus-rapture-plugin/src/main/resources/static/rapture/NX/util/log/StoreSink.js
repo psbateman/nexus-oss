@@ -19,7 +19,6 @@
  */
 Ext.define('NX.util.log.StoreSink', {
   extend: 'NX.util.log.Sink',
-  singleton: true,
   requires: [
     'NX.Assert'
   ],
@@ -35,19 +34,36 @@ Ext.define('NX.util.log.StoreSink', {
   /**
    * Maximum records to retain in the store.
    *
+   * @public
    * @property {Number}
+   * @readonly
    */
   maxSize: 200,
 
   /**
-   * @public
+   * @constructor
    * @param {NX.store.LogEvent} store
    */
-  attach: function (store) {
+  constructor: function (store) {
     this.store = store;
+    this.callParent(arguments);
   },
 
   /**
+   * Customize state.
+   *
+   * @override
+   * @return {Object}
+   */
+  getState: function() {
+    return Ext.apply(this.callParent(), {
+      maxSize: this.maxSize
+    });
+  },
+
+  /**
+   * Set the maximum size of the store.
+   *
    * @public
    * @param {Number} maxSize
    */
@@ -56,6 +72,8 @@ Ext.define('NX.util.log.StoreSink', {
 
     // log here should induce shrinkage, nothing more to do
     this.logDebug('Max size:', maxSize);
+
+    this.saveState();
   },
 
   /**

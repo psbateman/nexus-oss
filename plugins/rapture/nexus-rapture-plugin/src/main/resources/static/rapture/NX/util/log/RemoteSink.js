@@ -21,15 +21,9 @@
  */
 Ext.define('NX.util.log.RemoteSink', {
   extend: 'NX.util.log.Sink',
-  singleton: true,
 
-  /**
-   * @constructor
-   */
-  constructor: function () {
-    // sink defaults to disabled
-    this.enabled = false;
-  },
+  // default to disabled
+  enabled: false,
 
   /**
    * @override
