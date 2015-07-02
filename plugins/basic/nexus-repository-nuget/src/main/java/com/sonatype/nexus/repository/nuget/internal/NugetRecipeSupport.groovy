@@ -21,6 +21,8 @@ import org.sonatype.nexus.repository.security.SecurityHandler
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.types.ProxyType
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
+import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
+import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.Route
 import org.sonatype.nexus.repository.view.Router
@@ -78,6 +80,12 @@ abstract class NugetRecipeSupport
   NugetStaticFeedHandler staticFeedHandler
 
   @Inject
+  ContentHeadersHandler contentHeadersHandler
+
+  @Inject
+  ConditionalRequestHandler conditionalRequestHandler
+
+  @Inject
   public NugetRecipeSupport(@Named(ProxyType.NAME) final Type type,
                             @Named(NugetFormat.NAME) final Format format)
   {
@@ -126,6 +134,8 @@ abstract class NugetRecipeSupport
         .matcher(new TokenMatcher("/{id}/{version}"))
         .handler(timingHandler)
         .handler(securityHandler)
+        .handler(conditionalRequestHandler)
+        .handler(contentHeadersHandler)
         .handler(itemHandler)
         .handler(notFound())
         .create())
