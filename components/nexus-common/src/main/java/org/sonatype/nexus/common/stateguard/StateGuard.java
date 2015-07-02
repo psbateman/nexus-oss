@@ -115,6 +115,13 @@ public class StateGuard
   /**
    * Create a transition to given state.
    */
+  public Transition transition(final String to) {
+    return new TransitionImpl(to, false, new Class[0]);
+  }
+
+  /**
+   * Create a transition to given state with custom exception-handling behaviour.
+   */
   public Transition transition(final String to, final boolean silent, final Class<? extends Exception>[] ignore) {
     return new TransitionImpl(to, silent, ignore);
   }
