@@ -21,7 +21,6 @@
 Ext.define('NX.controller.Logging', {
   extend: 'Ext.app.Controller',
   requires: [
-    'Ext.util.MixedCollection',
     'NX.Log',
     'NX.util.log.StoreSink',
     'NX.util.log.ConsoleSink',
@@ -40,9 +39,9 @@ Ext.define('NX.controller.Logging', {
    * Array of sinks to receive events.
    *
    * @private
-   * @property {Ext.util.MixedCollection}
+   * @property {Object}
    */
-  sinks: Ext.create('Ext.util.MixedCollection'),
+  sinks: {},
 
   /**
    * Logging threshold.
@@ -69,11 +68,11 @@ Ext.define('NX.controller.Logging', {
    * @override
    */
   init: function () {
-    this.sinks.addAll({
+    this.sinks = {
       store: Ext.create('NX.util.log.StoreSink', this.getStore('LogEvent')),
       console: Ext.create('NX.util.log.ConsoleSink'),
       remote: Ext.create('NX.util.log.RemoteSink')
-    });
+    };
   },
 
   /**
@@ -102,7 +101,7 @@ Ext.define('NX.controller.Logging', {
    * @param {String} name
    */
   getSink: function(name) {
-    return this.sinks.getByKey(name);
+    return this.sinks[name];
   },
 
   /**
@@ -165,7 +164,7 @@ Ext.define('NX.controller.Logging', {
     }
 
     // pass events to all enabled sinks
-    this.sinks.each(function (sink) {
+    Ext.Object.each(this.sinks, function(key, sink) {
       if (sink.enabled) {
         sink.receive(event);
       }
