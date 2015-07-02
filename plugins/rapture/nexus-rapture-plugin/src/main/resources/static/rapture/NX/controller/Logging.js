@@ -36,12 +36,24 @@ Ext.define('NX.controller.Logging', {
   ],
 
   /**
-   * Array of sinks to receive events.
+   * Map of named sinks.
    *
    * @private
    * @property {Object}
+   * @readonly
    */
   sinks: {},
+
+  /**
+   * Array of configured sinks.
+   *
+   * Mirrors {@link #sinks} values, but in array form for faster evaluation.
+   *
+   * @private
+   * @property {NX.util.log.Sink[]}
+   * @readonly
+   */
+  sinkRefs: undefined,
 
   /**
    * Logging threshold.
@@ -73,6 +85,8 @@ Ext.define('NX.controller.Logging', {
       console: Ext.create('NX.util.log.ConsoleSink'),
       remote: Ext.create('NX.util.log.RemoteSink')
     };
+    // build array of all sink objects for faster evaluation
+    this.sinkRefs = Ext.Object.getValues(this.sinks);
   },
 
   /**
@@ -164,10 +178,10 @@ Ext.define('NX.controller.Logging', {
     }
 
     // pass events to all enabled sinks
-    Ext.Object.each(this.sinks, function(key, sink) {
-      if (sink.enabled) {
-        sink.receive(event);
+    for (var i=0; i<this.sinkRefs.length; i++) {
+      if (this.sinkRefs[i].enabled) {
+        this.sinkRefs[i].receive(event);
       }
-    });
+    }
   }
 });
