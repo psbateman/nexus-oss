@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -104,7 +104,7 @@ Ext.define('NX.controller.Message', {
       }
     });
 
-    me.getMessageStore().on('datachanged', me.updateHeader, me);
+    me.getStore('Message').on('datachanged', me.updateHeader, me);
   },
 
   /**
@@ -115,7 +115,7 @@ Ext.define('NX.controller.Message', {
   updateHeader: function () {
     var me = this,
         button = me.getButton(),
-        count = me.getMessageStore().getCount();
+        count = me.getStore('Message').getCount();
 
     if (button) {
       if (count) {
@@ -132,8 +132,7 @@ Ext.define('NX.controller.Message', {
    * @param button
    */
   toggleMessages: function(button) {
-    var me = this,
-        panel = me.getPanel();
+    var panel = this.getPanel();
 
     if (panel.isVisible()) {
       panel.hide();
@@ -155,7 +154,7 @@ Ext.define('NX.controller.Message', {
    */
   addMessage: function (message) {
     var me = this,
-        store = me.getMessageStore();
+        store = me.getStore('Message');
 
     if (!message.type) {
       message.type = 'default';

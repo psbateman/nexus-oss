@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -28,9 +28,9 @@ Ext.define('NX.coreui.controller.Tasks', {
     'NX.Permissions',
     'NX.I18n'
   ],
-
-  masters: 'nx-coreui-task-list',
-
+  masters: [
+    'nx-coreui-task-list'
+  ],
   stores: [
     'Task',
     'TaskType'
@@ -71,8 +71,8 @@ Ext.define('NX.coreui.controller.Tasks', {
   features: {
     mode: 'admin',
     path: '/System/Tasks',
-    text: NX.I18n.get('ADMIN_TASKS_TITLE'),
-    description: NX.I18n.get('ADMIN_TASKS_SUBTITLE'),
+    text: NX.I18n.get('Tasks_Text'),
+    description: NX.I18n.get('Tasks_Description'),
     view: { xtype: 'nx-coreui-task-feature' },
     iconConfig: {
       file: 'time.png',
@@ -93,6 +93,11 @@ Ext.define('NX.coreui.controller.Tasks', {
     me.callParent();
 
     me.listen({
+      store: {
+        '#Task': {
+          load: me.reselect
+        }
+      },
       controller: {
         '#Refresh': {
           refresh: me.onRefresh
@@ -148,10 +153,10 @@ Ext.define('NX.coreui.controller.Tasks', {
 
     if (Ext.isDefined(model)) {
       me.showSummary(model);
-      taskTypeModel = me.getTaskTypeStore().getById(model.get('typeId'));
+      taskTypeModel = me.getStore('TaskType').getById(model.get('typeId'));
       if (taskTypeModel) {
         if (!settings) {
-          me.getFeature().addTab({ xtype: 'nx-coreui-task-settings', title: NX.I18n.get('ADMIN_TASKS_DETAILS_SETTINGS_TAB'), weight: 20 });
+          me.getFeature().addTab({ xtype: 'nx-coreui-task-settings', title: NX.I18n.get('Tasks_Settings_Title'), weight: 20 });
         }
         me.showSettings(model);
       }
@@ -169,18 +174,17 @@ Ext.define('NX.coreui.controller.Tasks', {
    * @param {NX.coreui.model.Task} model task model
    */
   showSummary: function(model) {
-    var me = this,
-      info = {};
+    var info = {};
 
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_ID')] = model.getId();
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_NAME')] = model.get('name');
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_TYPE')] = model.get('typeName');
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_STATUS')] = model.get('statusDescription');
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_NEXT_RUN')] = model.get('nextRun');
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_LAST_RUN')] = model.get('lastRun');
-    info[NX.I18n.get('ADMIN_TASKS_SUMMARY_LAST_RESULT')] = model.get('lastRunResult');
+    info[NX.I18n.get('Tasks_ID_Info')] = model.getId();
+    info[NX.I18n.get('Tasks_Name_Info')] = model.get('name');
+    info[NX.I18n.get('Tasks_Type_Info')] = model.get('typeName');
+    info[NX.I18n.get('Tasks_Status_Info')] = model.get('statusDescription');
+    info[NX.I18n.get('Tasks_NextRun_Info')] = model.get('nextRun');
+    info[NX.I18n.get('Tasks_LastRun_Info')] = model.get('lastRun');
+    info[NX.I18n.get('Tasks_LastResult_Info')] = model.get('lastRunResult');
 
-    me.getInfo().showInfo(info);
+    this.getInfo().showInfo(info);
   },
 
   /**
@@ -200,10 +204,10 @@ Ext.define('NX.coreui.controller.Tasks', {
       feature = me.getFeature();
 
     //clear any filters that may previously have been applied
-    me.getTaskTypeStore().clearFilter();
+    me.getStore('TaskType').clearFilter();
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('ADMIN_TASKS_SELECT_TITLE'));
+    feature.setItemName(1, NX.I18n.get('Tasks_Select_Title'));
     me.loadCreateWizard(1, true, Ext.widget({
       xtype: 'panel',
       layout: {
@@ -226,7 +230,7 @@ Ext.define('NX.coreui.controller.Tasks', {
       panel;
 
     // Show the second panel in the create wizard, and set the breadcrumb
-    feature.setItemName(2, NX.I18n.format('ADMIN_TASKS_CREATE_TITLE', model.get('name')));
+    feature.setItemName(2, NX.I18n.format('Tasks_Create_Title', model.get('name')));
     me.loadCreateWizard(2, true, panel = Ext.widget({
       xtype: 'panel',
       layout: {
@@ -253,9 +257,8 @@ Ext.define('NX.coreui.controller.Tasks', {
         list = me.getList();
 
     if (list) {
-      me.getTaskTypeStore().load(function() {
-        me.reselect();
-      });
+      me.getStore('TaskType').load();
+      me.getStore('Task').load();
     }
   },
 
@@ -267,17 +270,17 @@ Ext.define('NX.coreui.controller.Tasks', {
       form = button.up('form'),
       values = form.getValues();
 
-    me.getContent().getEl().mask(NX.I18n.get('ADMIN_TASKS_UPDATE_MASK'));
+    me.getContent().getEl().mask(NX.I18n.get('Tasks_Update_Mask'));
     NX.direct.coreui_Task.update(values, function(response) {
       me.getContent().getEl().unmask();
       if (Ext.isObject(response)) {
         if (response.success) {
           NX.Messages.add({
-            text: NX.I18n.format('ADMIN_TASKS_SETTINGS_UPDATE_SUCCESS',
+            text: NX.I18n.format('Tasks_Update_Success',
               me.getDescription(me.getTaskModel().create(response.data))),
             type: 'success'
           });
-          me.loadStore(Ext.emptyFn);
+          me.getStore('Task').load();
         }
         else if (Ext.isDefined(response.errors)) {
           form.markInvalid(response.errors);
@@ -298,11 +301,11 @@ Ext.define('NX.coreui.controller.Tasks', {
       if (Ext.isObject(response)) {
         if (response.success) {
           NX.Messages.add({
-            text: NX.I18n.format('ADMIN_TASKS_CREATE_SUCCESS',
+            text: NX.I18n.format('Tasks_Create_Success',
               me.getDescription(me.getTaskModel().create(response.data))),
             type: 'success'
           });
-          me.loadStoreAndSelect(response.data.id, false);
+          me.getStore('Task').load();
         }
         else if (Ext.isDefined(response.errors)) {
           form.markInvalid(response.errors);
@@ -382,10 +385,10 @@ Ext.define('NX.coreui.controller.Tasks', {
         description = me.getDescription(model);
 
     NX.direct.coreui_Task.remove(model.getId(), function(response) {
-      me.loadStore();
+      me.getStore('Task').load();
       if (Ext.isObject(response) && response.success) {
         NX.Messages.add({
-          text: NX.I18n.format('ADMIN_TASKS_DETAILS_DELETE_SUCCESS', description), type: 'success'
+          text: NX.I18n.format('Tasks_Delete_Success', description), type: 'success'
         });
       }
     });
@@ -401,7 +404,7 @@ Ext.define('NX.coreui.controller.Tasks', {
         model, modelId, description;
 
     // Reload the form
-    me.loadStore();
+    me.getStore('Task').load();
 
     modelId = decodeURIComponent(bookmark.getSegment(1));
     model = me.getList().getStore().getById(modelId);
@@ -409,15 +412,15 @@ Ext.define('NX.coreui.controller.Tasks', {
 
     if (model) {
       description = me.getDescription(model);
-      NX.Dialogs.askConfirmation(NX.I18n.get('ADMIN_TASKS_DETAILS_RUN_CONFIRM'),
-        NX.I18n.format('ADMIN_TASKS_DETAILS_RUN_CONFIRM_HELP', description), function() {
-        me.getContent().getEl().mask(NX.I18n.get('ADMIN_TASKS_RUN_MASK'));
+      NX.Dialogs.askConfirmation(NX.I18n.get('Tasks_RunConfirm_Title'),
+        NX.I18n.format('Tasks_RunConfirm_HelpText', description), function() {
+        me.getContent().getEl().mask(NX.I18n.get('Tasks_Run_Mask'));
         NX.direct.coreui_Task.run(model.getId(), function(response) {
-          me.loadStore();
           me.getContent().getEl().unmask();
           if (Ext.isObject(response) && response.success) {
+            me.getStore('Task').load();
             NX.Messages.add({
-              text: NX.I18n.format('ADMIN_TASKS_DETAILS_RUN_SUCCESS', description), type: 'success'
+              text: NX.I18n.format('Tasks_Run_Success', description), type: 'success'
             });
           }
         });
@@ -435,7 +438,7 @@ Ext.define('NX.coreui.controller.Tasks', {
       model, modelId, description;
 
     // Reload the form
-    me.loadStore();
+    me.getStore('Task').load();
 
     modelId = decodeURIComponent(bookmark.getSegment(1));
     model = me.getList().getStore().getById(modelId);
@@ -443,15 +446,15 @@ Ext.define('NX.coreui.controller.Tasks', {
 
     if (model) {
       description = me.getDescription(model);
-      NX.Dialogs.askConfirmation(NX.I18n.get('ADMIN_TASKS_DETAILS_STOP_CONFIRM'),
-        NX.I18n.format('ADMIN_TASKS_DETAILS_STOP_CONFIRM_HELP', description), function() {
-        me.getContent().getEl().mask(NX.I18n.get('ADMIN_TASKS_STOP_MASK'));
+      NX.Dialogs.askConfirmation(NX.I18n.get('Tasks_StopConfirm_Title'),
+        NX.I18n.format('Tasks_StopConfirm_HelpText', description), function() {
+        me.getContent().getEl().mask(NX.I18n.get('Tasks_Stop_Mask'));
         NX.direct.coreui_Task.stop(model.getId(), function(response) {
-          me.loadStore();
           me.getContent().getEl().unmask();
           if (Ext.isObject(response) && response.success) {
+            me.getStore('Task').load();
             NX.Messages.add({
-              text: NX.I18n.format('ADMIN_TASKS_DETAILS_STOP_SUCCESS', description), type: 'success'
+              text: NX.I18n.format('Tasks_Stop_Success', description), type: 'success'
             });
           }
         });

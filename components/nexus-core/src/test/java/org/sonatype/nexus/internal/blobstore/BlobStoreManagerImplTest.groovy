@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -106,18 +106,6 @@ class BlobStoreManagerImplTest
     
     verify(blobStore).stop();
     verify(store).delete(configuration);
-  }
-  
-  @Test
-  void 'BlobStores will be eagerly created if not already configured'() {
-    BlobStore blobStore = mock(BlobStore)
-    when(provider.get()).thenReturn(blobStore)
-    
-    BlobStore autoCreatedBlobStore = underTest.get('test')
-    
-    verify(blobStore).start()
-    verify(store).create(any(BlobStoreConfiguration))
-    assert blobStore == autoCreatedBlobStore
   }
 
   @Test

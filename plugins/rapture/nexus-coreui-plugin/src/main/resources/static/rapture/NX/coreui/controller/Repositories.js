@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -26,15 +26,17 @@ Ext.define('NX.coreui.controller.Repositories', {
     'NX.I18n'
   ],
 
-  masters: 'nx-coreui-repository-list',
-
+  masters: [
+    'nx-coreui-repository-list'
+  ],
   models: [
-    'NX.coreui.store.Repository'
+    'Repository'
   ],
   stores: [
-    'NX.coreui.store.Repository',
+    'Blobstore',
+    'Repository',
     'RepositoryRecipe',
-    'NX.coreui.store.RepositoryReference'
+    'RepositoryReference'
   ],
   views: [
     'repository.RepositoryAdd',
@@ -76,8 +78,8 @@ Ext.define('NX.coreui.controller.Repositories', {
   features: {
     mode: 'admin',
     path: '/Repository/Repositories',
-    text: NX.I18n.get('ADMIN_REPOSITORIES_TITLE'),
-    description: NX.I18n.get('ADMIN_REPOSITORIES_SUBTITLE'),
+    text: NX.I18n.get('Repositories_Text'),
+    description: NX.I18n.get('Repositories_Description'),
     view: { xtype: 'nx-coreui-repository-feature' },
     iconConfig: {
       file: 'database.png',
@@ -100,15 +102,20 @@ Ext.define('NX.coreui.controller.Repositories', {
     me.listen({
       controller: {
         '#Refresh': {
-          refresh: me.loadRecipe
+          refresh: me.loadRelatedStores
         },
         '#State': {
           receivingchanged: me.onStateReceivingChanged
         }
       },
+      store: {
+        '#Repository': {
+          load: me.reselect
+        }
+      },
       component: {
         'nx-coreui-repository-list': {
-          beforerender: me.loadRecipe,
+          beforerender: me.loadRelatedStores,
           afterrender: me.startStatusPolling,
           beforedestroy: me.stopStatusPolling
         },
@@ -170,7 +177,7 @@ Ext.define('NX.coreui.controller.Repositories', {
         feature = me.getFeature();
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('ADMIN_REPOSITORIES_SELECT_TITLE'));
+    feature.setItemName(1, NX.I18n.get('Repositories_SelectRecipe_Title'));
     feature.setItemClass(1, NX.Icons.cls('repository-hosted', 'x16'));
 
     // Show the panel
@@ -204,7 +211,7 @@ Ext.define('NX.coreui.controller.Repositories', {
     }
     else {
       // Show the second panel in the create wizard, and set the breadcrumb
-      feature.setItemName(2, NX.I18n.format('ADMIN_REPOSITORIES_CREATE_TITLE', model.get('name')));
+      feature.setItemName(2, NX.I18n.format('Repositories_Create_Title', model.get('name')));
       feature.setItemClass(2, NX.Icons.cls('repository-hosted', 'x16'));
       me.loadCreateWizard(2, true, { xtype: 'nx-coreui-repository-add', recipe: model });
     }
@@ -213,12 +220,13 @@ Ext.define('NX.coreui.controller.Repositories', {
   /**
    * @private
    */
-  loadRecipe: function() {
+  loadRelatedStores: function() {
     var me = this,
         list = me.getList();
 
     if (list) {
-      me.getRepositoryRecipeStore().load();
+      me.getStore('Blobstore').load();
+      me.getStore('RepositoryRecipe').load();
     }
   },
 
@@ -226,15 +234,7 @@ Ext.define('NX.coreui.controller.Repositories', {
    * @private
    */
   onSettingsSubmitted: function(form, action) {
-    var me = this,
-        win = form.up('nx-coreui-repository-add');
-
-    if (win) {
-      me.loadStoreAndSelect(action.result.data.id, false);
-    }
-    else {
-      me.loadStore(Ext.emptyFn);
-    }
+    this.getStore('Repository').load();
   },
 
   /**
@@ -245,7 +245,7 @@ Ext.define('NX.coreui.controller.Repositories', {
         description = me.getDescription(model);
 
     NX.direct.coreui_Repository.remove(model.getId(), function(response) {
-      me.loadStore(Ext.emptyFn);
+      me.getStore('Repository').load();
       if (Ext.isObject(response) && response.success) {
         NX.Messages.add({ text: 'Repository deleted: ' + description, type: 'success' });
       }
@@ -308,7 +308,7 @@ Ext.define('NX.coreui.controller.Repositories', {
     var me = this;
 
     Ext.Array.each(repositoryStatuses, function(repositoryStatus) {
-      var repositoryModel = me.getNXCoreuiStoreRepositoryStore().findRecord('name', repositoryStatus.repositoryName);
+      var repositoryModel = me.getStore('Repository').findRecord('name', repositoryStatus.repositoryName);
       if (repositoryModel) {
         repositoryModel.set('status', repositoryStatus);
         repositoryModel.commit(true);

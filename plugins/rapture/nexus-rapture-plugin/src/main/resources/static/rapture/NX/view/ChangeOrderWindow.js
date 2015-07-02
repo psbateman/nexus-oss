@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -54,8 +54,8 @@ Ext.define('NX.view.ChangeOrderWindow', {
       },
       buttonAlign: 'left',
       buttons: [
-        { text: NX.I18n.get('GLOBAL_DIALOG_ORDER_SUBMIT_BUTTON'), action: 'save', formBind: true, ui: 'nx-primary' },
-        { text: NX.I18n.get('GLOBAL_DIALOG_ORDER_CANCEL_BUTTON'), handler: function () {
+        { text: NX.I18n.get('ChangeOrderWindow_Submit_Button'), action: 'save', formBind: true, ui: 'nx-primary' },
+        { text: NX.I18n.get('ChangeOrderWindow_Cancel_Button'), handler: function () {
           this.up('window').close();
         }}
       ]

@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -26,6 +26,9 @@ import org.joda.time.format.DateTimeFormatter;
  */
 public class Constants
 {
+  private Constants() {
+  }
+
   /**
    * File name of Maven2 repository metadata files.
    */
@@ -47,4 +50,9 @@ public class Constants
    * Content Type of Maven2 checksum files (sha1, md5).
    */
   public static final String CHECKSUM_CONTENT_TYPE = ContentTypes.TEXT_PLAIN;
+
+  /**
+   * The suffix of base version for snapshots.
+   */
+  public static final String SNAPSHOT_VERSION_SUFFIX = "SNAPSHOT";
 }

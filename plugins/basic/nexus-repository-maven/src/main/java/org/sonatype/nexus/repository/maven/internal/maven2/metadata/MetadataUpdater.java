@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -117,8 +117,6 @@ public class MetadataUpdater
         write(tx, mavenPath, toMetadata(metadata));
       }
       else {
-        // TODO: compare? unsure is it worth it, as compare would also eat CPU maybe even more that writing would
-        // update old by merging them and write out
         final Metadata updated = metadataMerger.merge(
             ImmutableList.of(
                 new MetadataEnvelope(repository.getName() + ":" + mavenPath.getPath(), oldMetadata),
@@ -155,7 +153,7 @@ public class MetadataUpdater
   void delete(final StorageTx tx, final MavenPath mavenPath) {
     checkNotNull(mavenPath);
     try {
-      final ArrayList<MavenPath> paths = new ArrayList<>();
+      final List<MavenPath> paths = new ArrayList<>();
       paths.add(mavenPath);
       for (HashType hashType : HashType.values()) {
         paths.add(mavenPath.hash(hashType));
@@ -231,7 +229,7 @@ public class MetadataUpdater
         return metadataReader.read(is);
       }
       catch (XmlPullParserException e) {
-        // corrupted, nuke it
+        log.warn("Corrupted metadata {}", mavenPath.getPath(), e);
         return null;
       }
     }

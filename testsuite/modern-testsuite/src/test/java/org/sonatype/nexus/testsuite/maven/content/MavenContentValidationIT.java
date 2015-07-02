@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -21,9 +21,8 @@ import org.sonatype.nexus.log.LoggerLevel;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
+import org.sonatype.nexus.testsuite.maven.Maven2Client;
 import org.sonatype.nexus.testsuite.maven.MavenITSupport;
-import org.sonatype.nexus.testsuite.repository.FormatClientSupport;
-import org.sonatype.sisu.litmus.testsupport.hamcrest.FileMatchers;
 import org.sonatype.tests.http.server.fluent.Behaviours;
 import org.sonatype.tests.http.server.fluent.Server;
 
@@ -37,7 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ops4j.pax.exam.Option;
-import org.ops4j.pax.exam.options.WrappedUrlProvisionOption.OverwriteMode;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 
@@ -46,8 +44,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.ops4j.pax.exam.CoreOptions.maven;
-import static org.ops4j.pax.exam.CoreOptions.wrappedBundle;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.sonatype.sisu.litmus.testsupport.hamcrest.FileMatchers.contains;
 import static org.sonatype.sisu.litmus.testsupport.hamcrest.FileMatchers.exists;
 
@@ -61,11 +58,7 @@ public class MavenContentValidationIT
   @org.ops4j.pax.exam.Configuration
   public static Option[] configureNexus() {
     return options(nexusDistribution("org.sonatype.nexus.assemblies", "nexus-base-template"),
-        // TODO: This should be replaced with:
-        // mavenBundle("org.sonatype.http-testing-harness", "server-provider").versionAsInProject()
-        // ..once the http-testing-harness duplicate import of org.sonatype.tests.http.server.api is corrected.
-        wrappedBundle(maven("org.sonatype.http-testing-harness", "server-provider").versionAsInProject())
-            .overwriteManifest(OverwriteMode.FULL).instructions("DynamicImport-Package=*")
+        mavenBundle("org.sonatype.http-testing-harness", "server-provider").versionAsInProject()
     );
   }
 
@@ -83,7 +76,7 @@ public class MavenContentValidationIT
 
   private Server upstream;
 
-  private FormatClientSupport client;
+  private Maven2Client client;
 
   @Before
   public void setupMavenDebugStorage() {
@@ -177,7 +170,7 @@ public class MavenContentValidationIT
     mavenCentralConfiguration.attributes("proxy").set("remoteUrl", "http://localhost:" + upstream.getPort() + "/");
     mavenCentral = repositoryManager.update(mavenCentralConfiguration);
 
-    client = new FormatClientSupport(HttpClients.custom().build(), HttpClientContext.create(),
+    client = new Maven2Client(HttpClients.custom().build(), HttpClientContext.create(),
         resolveUrl(nexusUrl, "/repository/" + mavenCentral.getName() + "/").toURI());
   }
 

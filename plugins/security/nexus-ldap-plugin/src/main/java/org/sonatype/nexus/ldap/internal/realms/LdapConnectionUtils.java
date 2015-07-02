@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -21,11 +21,8 @@ import javax.net.ssl.SSLContext;
 import com.sonatype.nexus.ssl.plugin.TrustStore;
 
 import org.sonatype.nexus.ldap.internal.LdapURL;
-import org.sonatype.nexus.ldap.internal.connector.DefaultLdapConnector;
 import org.sonatype.nexus.ldap.internal.connector.dao.LdapAuthConfiguration;
 import org.sonatype.nexus.ldap.internal.connector.dao.LdapDAOException;
-import org.sonatype.nexus.ldap.internal.connector.dao.LdapGroupDAO;
-import org.sonatype.nexus.ldap.internal.connector.dao.LdapUserDAO;
 import org.sonatype.nexus.ldap.internal.persist.entity.Connection;
 import org.sonatype.nexus.ldap.internal.persist.entity.Connection.Host;
 import org.sonatype.nexus.ldap.internal.persist.entity.LdapConfiguration;

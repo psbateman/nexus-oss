@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -25,7 +25,7 @@ Ext.define('NX.coreui.view.user.UserSearchBox', {
     'NX.I18n'
   ],
 
-  emptyText: NX.I18n.get('ADMIN_USERS_LIST_FILTER_PLACEHOLDER'),
+  emptyText: NX.I18n.get('User_UserList_Filter_EmptyText'),
   width: 320,
   submitValue: false,
 
@@ -88,9 +88,7 @@ Ext.define('NX.coreui.view.user.UserSearchBox', {
    * Clear search.
    */
   onTrigger1Click: function() {
-    var me = this;
-
-    me.clearSearch();
+    this.clearSearch();
   },
 
   /**

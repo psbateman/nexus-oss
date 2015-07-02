@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -47,7 +47,7 @@ Ext.define('NX.util.Validator', {
       'nx-name': function(val) {
         return NX.util.Validator.nxNameRegex.test(val);
       },
-      'nx-nameText': NX.I18n.get('NAME_VALIDATION_MESSAGE')
+      'nx-nameText': NX.I18n.get('Util_Validator_Text')
     }
   ],
 

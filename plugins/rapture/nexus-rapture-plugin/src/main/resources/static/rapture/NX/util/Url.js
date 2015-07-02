@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -19,6 +19,9 @@
  */
 Ext.define('NX.util.Url', {
   singleton: true,
+  requires: [
+    'Ext.String'
+  ],
 
   /**
    * Returns the base URL of the Nexus server.  URL never ends with '/'.
@@ -26,6 +29,41 @@ Ext.define('NX.util.Url', {
    * @public
    */
   baseUrl: NX.app.baseUrl,
+
+  /**
+   * Strategies for building urls to download assets.
+   *
+   * @private
+   */
+  repositoryUrlStrategies: {
+    maven2: function(assetModel) {
+      var repositoryName = assetModel.get('repositoryName'),
+          assetName = assetModel.get('name');
+      return NX.util.Url.asLink(NX.util.Url.baseUrl + '/repository/' + repositoryName + assetName, assetName);
+    },
+    nuget: function(assetModel) {
+      var repositoryName = assetModel.get('repositoryName'),
+          assetName = assetModel.get('name'),
+          attributes = assetModel.get('attributes'),
+          version = attributes.nuget.version,
+          path = '/' + assetName + '/' + version;
+      return NX.util.Url.asLink(NX.util.Url.baseUrl + '/repository/' + repositoryName + path, path);
+    },
+    raw: function(assetModel) {
+      var repositoryName = assetModel.get('repositoryName'),
+          assetName = assetModel.get('name');
+      return NX.util.Url.asLink(NX.util.Url.baseUrl + '/repository/' + repositoryName + '/' + assetName, assetName);
+    }
+  },
+
+  /**
+   * Add a strategy to build repository download links for a particular strategy.
+   *
+   * @public
+   */
+  addRepositoryUrlStrategy: function(format, strategy) {
+    this.repositoryUrlStrategies[format] = strategy;
+  },
 
   /**
    * @public
@@ -46,8 +84,9 @@ Ext.define('NX.util.Url', {
   },
 
   /**
-   * @public
    * Creates a link.
+   *
+   * @public
    * @param {String} url to link to
    * @param {String} [text] link text. If omitted, defaults to url value.
    * @param {String} [target] link target. If omitted, defaults to '_blank'
@@ -64,6 +103,18 @@ Ext.define('NX.util.Url', {
       id = '';
     }
     return '<a href="' + url + '" target="' + target + '"' + id + '>' + text + '</a>';
+  },
+
+  /**
+   * Creates a link to an asset in a repository.
+   *
+   * @public
+   * @param {Object} assetModel the asset to create a link for
+   * @param {String} format the format of the repository storing this asset
+   */
+  asRepositoryLink: function(assetModel, format) {
+    var linkStrategy = this.repositoryUrlStrategies[format];
+    return linkStrategy(assetModel);
   }
 
 });

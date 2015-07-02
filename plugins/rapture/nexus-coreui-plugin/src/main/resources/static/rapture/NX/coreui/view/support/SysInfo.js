@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -34,7 +34,7 @@ Ext.define('NX.coreui.view.support.SysInfo', {
     items: [
       {
         xtype: 'button',
-        text: NX.I18n.get('ADMIN_SYSTEM_INFORMATION_DOWNLOAD_BUTTON'),
+        text: NX.I18n.get('Support_SysInfo_Download_Button'),
         glyph: 'xf019@FontAwesome' /* fa-download */,
         action: 'download'
       }
@@ -112,6 +112,7 @@ Ext.define('NX.coreui.view.support.SysInfo', {
         '<div class="x-panel x-panel-nx-inset">',
         // nexus details
         '{[ this.section("nexus-status", values) ]}',
+        '{[ this.section("nexus-node", values) ]}',
         '{[ this.section("nexus-configuration", values) ]}',
         '{[ this.section("nexus-properties", values) ]}',
         '{[ this.section("nexus-license", values) ]}',

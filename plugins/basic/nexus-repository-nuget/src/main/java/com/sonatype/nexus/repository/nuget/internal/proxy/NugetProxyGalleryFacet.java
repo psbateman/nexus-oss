@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -66,8 +65,6 @@ public class NugetProxyGalleryFacet
 {
   private static final int TWO_PAGES = 2 * ODataUtils.PAGE_SIZE;
 
-  private static final Pattern COUNT_REGEX = Pattern.compile("<m:count>(\\d*)</m:count>");
-
   private final NugetFeedFetcher fetcher;
 
   @VisibleForTesting
@@ -76,12 +73,17 @@ public class NugetProxyGalleryFacet
   @VisibleForTesting
   static class Config
   {
-    public int queryCacheSize = 300;
+    // By default, the query cache will hold up to 300 entries for an hour each
+    public static final int DEFAULT_QUERY_CACHE_SIZE = 300;
+
+    public static final int DEFAULT_QUERY_CACHE_ITEM_AGE = Time.minutes(60).toSecondsI();
+
+    public int queryCacheSize = DEFAULT_QUERY_CACHE_SIZE;
 
     /**
      * Query cache item-max-age seconds.
      */
-    public int queryCacheItemMaxAge = Time.minutes(60).toSecondsI();
+    public int queryCacheItemMaxAge = DEFAULT_QUERY_CACHE_ITEM_AGE;
 
     @Override
     public String toString() {
@@ -277,7 +279,7 @@ public class NugetProxyGalleryFacet
   /**
    * A factory to create {@link Callable}s to populate the count cache.
    */
-  private static abstract class RemoteCallFactory
+  private abstract static class RemoteCallFactory
   {
     protected final NugetFeedFetcher fetcher;
 
@@ -308,7 +310,8 @@ public class NugetProxyGalleryFacet
       {
         @Override
         public Integer call() throws Exception {
-          return firstNonNull(fetcher.cachePackageFeed(remote, nugetQuery, 2, false, new ODataConsumer()
+          // The count cache shouldn't contain nulls, so return 0 if we fail to get a result from the feed
+          return firstNonNull(fetcher.cachePackageFeed(remote, nugetQuery, false, new ODataConsumer()
           {
             @Override
             public void consume(final Map<String, String> data) {

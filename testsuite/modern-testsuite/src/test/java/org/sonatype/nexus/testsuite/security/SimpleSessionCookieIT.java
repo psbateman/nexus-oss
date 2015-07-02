@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -19,11 +19,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.sonatype.nexus.blobstore.api.BlobStoreManager;
+import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.text.Strings2;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
-import org.sonatype.nexus.repository.storage.StorageFacetImpl;
 import org.sonatype.nexus.repository.storage.WritePolicy;
 import org.sonatype.nexus.testsuite.NexusHttpsITSupport;
 
@@ -94,7 +95,11 @@ public class SimpleSessionCookieIT
       testRepositoryConfig.setRecipeName("raw-hosted"); // using name here to not complicate importing of internal class
       testRepositoryConfig.setRepositoryName(TEST_REPOSITORY_NAME);
       testRepositoryConfig.setOnline(true);
-      testRepositoryConfig.attributes("storage").set("writePolicy", WritePolicy.ALLOW.toString());
+
+      NestedAttributesMap storage = testRepositoryConfig.attributes("storage");
+      storage.set("blobStoreName", BlobStoreManager.DEFAULT_BLOBSTORE_NAME);
+      storage.set("writePolicy", WritePolicy.ALLOW.toString());
+
       testRepository = repositoryManager.create(testRepositoryConfig);
     }
   }

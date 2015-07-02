@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -26,12 +26,12 @@ Ext.define('NX.coreui.view.system.Bundles', {
 
   iconName: 'bundle-default',
 
-  masters: {
-    xtype: 'nx-coreui-system-bundlelist'
-  },
+  masters: [
+    { xtype: 'nx-coreui-system-bundlelist' }
+  ],
 
   tabs: {
     xtype: 'nx-info-panel',
-    title: NX.I18n.get('ADMIN_BUNDLES_DETAILS_SUMMARY')
+    title: NX.I18n.get('System_Bundles_Details_Tab')
   }
 });

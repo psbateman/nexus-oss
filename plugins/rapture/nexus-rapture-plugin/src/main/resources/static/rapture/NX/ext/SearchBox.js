@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -28,7 +28,9 @@ Ext.define('NX.ext.SearchBox', {
   submitValue: false,
 
   /**
-   * @cfg {int} number of milliseconds to trigger searching (defaults to 1000)
+   * Number of milliseconds to trigger searching (defaults to 1000).
+   *
+   * @cfg {Number}
    */
   searchDelay: 1000,
 
@@ -98,18 +100,18 @@ Ext.define('NX.ext.SearchBox', {
   },
 
   /**
-   * @private
    * Clear search.
+   *
+   * @private
    */
   onTrigger1Click: function () {
-    var me = this;
-
-    me.clearSearch();
+    this.clearSearch();
   },
 
   /**
-   * @private
    * Search on ENTER.
+   *
+   * @private
    */
   onEnter: function () {
     var me = this;
@@ -118,8 +120,9 @@ Ext.define('NX.ext.SearchBox', {
   },
 
   /**
-   * @private
    * Trigger search.
+   *
+   * @private
    */
   onValueChange: function (trigger, value) {
     var me = this;
@@ -134,8 +137,9 @@ Ext.define('NX.ext.SearchBox', {
   },
 
   /**
-   * @public
    * Search for value and fires a 'search' event.
+   *
+   * @public
    * @param value to search for
    */
   search: function (value) {
@@ -152,8 +156,9 @@ Ext.define('NX.ext.SearchBox', {
   },
 
   /**
-   * @public
    * Clears the search and fires a 'searchcleared' event.
+   *
+   * @public
    */
   clearSearch: function () {
     var me = this;

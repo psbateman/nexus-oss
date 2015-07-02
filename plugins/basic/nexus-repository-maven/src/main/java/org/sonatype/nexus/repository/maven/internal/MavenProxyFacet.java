@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -65,12 +65,12 @@ public class MavenProxyFacet
   }
 
   @Override
-  protected String getUrl(final @Nonnull Context context) {
+  protected String getUrl(@Nonnull final Context context) {
     return context.getRequest().getPath().substring(1); // omit leading slash
   }
 
   @Nonnull
-  private MavenPath mavenPath(final @Nonnull Context context) {
+  private MavenPath mavenPath(@Nonnull final Context context) {
     return context.getAttributes().require(MavenPath.class);
   }
 }

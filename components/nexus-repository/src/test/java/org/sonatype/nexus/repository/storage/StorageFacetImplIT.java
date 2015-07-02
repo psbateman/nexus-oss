@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -10,7 +10,6 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-
 package org.sonatype.nexus.repository.storage;
 
 import java.util.Collections;
@@ -22,6 +21,7 @@ import org.sonatype.nexus.blobstore.api.BlobStoreManager;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.entity.EntityId;
 import org.sonatype.nexus.common.entity.EntityVersion;
+import org.sonatype.nexus.common.node.LocalNodeAccess;
 import org.sonatype.nexus.mime.MimeRulesSource;
 import org.sonatype.nexus.mime.internal.DefaultMimeSupport;
 import org.sonatype.nexus.orient.HexRecordIdObfuscator;
@@ -50,7 +50,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -95,6 +94,8 @@ public class StorageFacetImplIT
 
   @Before
   public void setUp() throws Exception {
+    LocalNodeAccess mockLocalNodeAccess = mock(LocalNodeAccess.class);
+    when(mockLocalNodeAccess.getId()).thenReturn("testNodeId");
     BlobStoreManager mockBlobStoreManager = mock(BlobStoreManager.class);
     when(mockBlobStoreManager.get(anyString())).thenReturn(mock(BlobStore.class));
     BucketEntityAdapter bucketEntityAdapter = new BucketEntityAdapter();
@@ -107,6 +108,7 @@ public class StorageFacetImplIT
     ContentValidatorSelector contentValidatorSelector = new ContentValidatorSelector(Collections.<String, ContentValidator>emptyMap(), new DefaultContentValidator(new DefaultMimeSupport()));
     MimeRulesSourceSelector mimeRulesSourceSelector = new MimeRulesSourceSelector(Collections.<String, MimeRulesSource>emptyMap());
     underTest = new StorageFacetImpl(
+        mockLocalNodeAccess,
         mockBlobStoreManager,
         Providers.of(database.getInstance()),
         bucketEntityAdapter,

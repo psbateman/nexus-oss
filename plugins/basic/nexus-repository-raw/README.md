@@ -1,7 +1,7 @@
 <!--
 
     Sonatype Nexus (TM) Open Source Version
-    Copyright (c) 2008-2015 Sonatype, Inc.
+    Copyright (c) 2008-present Sonatype, Inc.
     All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
 
     This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -51,4 +51,5 @@
     curl -v -X GET http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
 
 ## Partial Fetch Example
-   curl -v --user 'admin:admin123' -H 'Range: bytes=100-' -X GET http://localhost:8081/repository/rawproxy1/maven-metadata.xml
+
+    curl -v --user 'admin:admin123' -H 'Range: bytes=100-' -X GET http://localhost:8081/repository/rawproxy1/maven-metadata.xml

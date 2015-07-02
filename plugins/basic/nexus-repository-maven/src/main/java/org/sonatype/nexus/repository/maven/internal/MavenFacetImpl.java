@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -30,7 +30,6 @@ import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.common.io.TempStreamSupplier;
 import org.sonatype.nexus.repository.FacetSupport;
-import org.sonatype.nexus.repository.InvalidContentException;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.config.ConfigurationFacet;
 import org.sonatype.nexus.repository.maven.MavenFacet;
@@ -53,6 +52,7 @@ import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.hash.HashCode;
@@ -80,36 +80,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Named
 public class MavenFacetImpl
     extends FacetSupport
-    implements MavenFacet
+    implements MavenFacet, MavenAttributes
 {
-  // artifact shared properties of both, artifact component and artifact asset
-
-  private static final String P_GROUP_ID = "groupId";
-
-  private static final String P_ARTIFACT_ID = "artifactId";
-
-  private static final String P_VERSION = "version";
-
-  private static final String P_BASE_VERSION = "baseVersion";
-
-  private static final String P_CLASSIFIER = "classifier";
-
-  private static final String P_EXTENSION = "extension";
-
-  // artifact component properties
-
-  private static final String P_COMPONENT_KEY = "key";
-
-  // shared properties for both artifact and metadata assets
-
-  private static final String P_ASSET_KEY = "key";
-
-  private static final String P_CONTENT_LAST_MODIFIED = "contentLastModified";
-
-  private static final String P_CONTENT_ETAG = "etag";
-
-  private static final String P_LAST_VERIFIED = "lastVerified";
-
   private final Map<String, MavenPathParser> mavenPathParsers;
 
   @VisibleForTesting
@@ -233,7 +205,7 @@ public class MavenFacetImpl
 
   @Override
   public void put(final MavenPath path, final Payload payload)
-      throws IOException, InvalidContentException
+      throws IOException
   {
     try (final TempStreamSupplier streamSupplier = new TempStreamSupplier(payload.openInputStream())) {
       storageFacet.perform(new Operation<Void>()
@@ -265,7 +237,7 @@ public class MavenFacetImpl
 
   @Override
   public void put(final StorageTx tx, final MavenPath path, final Payload payload)
-      throws IOException, InvalidContentException
+      throws IOException
   {
     put(tx, path, payload, payload.openInputStream());
   }
@@ -274,7 +246,7 @@ public class MavenFacetImpl
                    final MavenPath path,
                    final Payload payload,
                    final InputStream inputStream)
-      throws IOException, InvalidContentException
+      throws IOException
   {
     log.debug("PUT {} : {}", getRepository().getName(), path.getPath());
     final AssetBlob assetBlob = tx.createBlob(
@@ -300,7 +272,7 @@ public class MavenFacetImpl
                            final MavenPath path,
                            final AssetBlob assetBlob,
                            @Nullable final AttributesMap contentAttributes)
-      throws IOException, InvalidContentException
+      throws IOException
   {
     final Coordinates coordinates = checkNotNull(path.getCoordinates());
     Component component = findComponent(tx, tx.getBucket(), path);
@@ -346,7 +318,7 @@ public class MavenFacetImpl
                        final MavenPath path,
                        final AssetBlob assetBlob,
                        @Nullable final AttributesMap contentAttributes)
-      throws IOException, InvalidContentException
+      throws IOException
   {
     Asset asset = findAsset(tx, tx.getBucket(), path);
     if (asset == null) {
@@ -376,9 +348,15 @@ public class MavenFacetImpl
       if (lastModified != null) {
         formatAttributes.set(P_CONTENT_LAST_MODIFIED, lastModified.toDate());
       }
-      formatAttributes.set(P_CONTENT_ETAG, contentAttributes.get(Content.CONTENT_ETAG, String.class));
+      final String etag = contentAttributes.get(Content.CONTENT_ETAG, String.class);
+      if (!Strings.isNullOrEmpty(etag)) {
+        formatAttributes.set(P_CONTENT_ETAG, etag);
+      }
+      else {
+        formatAttributes.remove(P_CONTENT_ETAG);
+      }
     }
-    else {
+    if (formatAttributes.get(P_CONTENT_LAST_MODIFIED) == null) {
       formatAttributes.set(P_CONTENT_LAST_MODIFIED, DateTime.now().toDate());
     }
   }
@@ -475,7 +453,6 @@ public class MavenFacetImpl
    * Returns component key based on passed in {@link Coordinates} G:A:V values.
    */
   private String getComponentKey(final Coordinates coordinates) {
-    // TODO: maybe sha1() the resulting string?
     return coordinates.getGroupId()
         + ":" + coordinates.getArtifactId()
         + ":" + coordinates.getVersion();
@@ -485,7 +462,6 @@ public class MavenFacetImpl
    * Returns asset key based on passed in {@link MavenPath} path value.
    */
   private String getAssetKey(final MavenPath mavenPath) {
-    // TODO: maybe sha1() the resulting string?
     return mavenPath.getPath();
   }
 

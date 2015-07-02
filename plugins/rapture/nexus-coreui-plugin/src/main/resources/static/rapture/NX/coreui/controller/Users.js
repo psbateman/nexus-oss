@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2008-2015 Sonatype, Inc.
+ * Copyright (c) 2008-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -29,9 +29,9 @@ Ext.define('NX.coreui.controller.Users', {
     'NX.Dialogs',
     'NX.I18n'
   ],
-
-  masters: 'nx-coreui-user-list',
-
+  masters: [
+    'nx-coreui-user-list'
+  ],
   models: [
     'User'
   ],
@@ -77,8 +77,8 @@ Ext.define('NX.coreui.controller.Users', {
     {
       mode: 'admin',
       path: '/Security/Users',
-      text: NX.I18n.get('ADMIN_USERS_TITLE'),
-      description: NX.I18n.get('ADMIN_USERS_SUBTITLE'),
+      text: NX.I18n.get('User_Text'),
+      description: NX.I18n.get('User_Description'),
       view: { xtype: 'nx-coreui-user-feature' },
       iconConfig: {
         file: 'group.png',
@@ -92,8 +92,8 @@ Ext.define('NX.coreui.controller.Users', {
     {
       mode: 'user',
       path: '/Account',
-      text: NX.I18n.get('USER_ACCOUNT_TITLE'),
-      description: NX.I18n.get('USER_ACCOUNT_SUBTITLE'),
+      text: NX.I18n.get('Users_Text'),
+      description: NX.I18n.get('Users_Description'),
       view: { xtype: 'nx-coreui-user-account' },
       iconConfig: {
         file: 'user.png',
@@ -121,6 +121,9 @@ Ext.define('NX.coreui.controller.Users', {
         }
       },
       store: {
+        '#User': {
+          load: me.reselect
+        },
         '#UserSource': {
           load: me.onUserSourceLoad
         }
@@ -214,7 +217,7 @@ Ext.define('NX.coreui.controller.Users', {
       feature = me.getFeature();
 
     // Show the first panel in the create wizard, and set the breadcrumb
-    feature.setItemName(1, NX.I18n.get('ADMIN_USERS_CREATE_TITLE'));
+    feature.setItemName(1, NX.I18n.get('Users_Create_Title'));
     me.loadCreateWizard(1, true, Ext.create('widget.nx-coreui-user-add'));
   },
 
@@ -222,8 +225,7 @@ Ext.define('NX.coreui.controller.Users', {
    * @private
    */
   showChangePasswordWindowForSelection: function() {
-    var me = this,
-        list = me.getList(),
+    var list = this.getList(),
         userId = list.getSelectionModel().getSelection()[0].getId();
 
     NX.Security.doWithAuthenticationToken(
@@ -267,7 +269,7 @@ Ext.define('NX.coreui.controller.Users', {
         userSourceButton.sourceId = 'default';
       }
       me.updateEmptyText();
-      me.getUserStore().load({
+      me.getStore('User').load({
         params: {
           filter: [
             { property: 'source', value: userSourceButton.sourceId },
@@ -293,8 +295,8 @@ Ext.define('NX.coreui.controller.Users', {
         list = me.getList();
 
     if (list) {
-      me.getUserSourceStore().load();
-      me.getRoleStore().load();
+      me.getStore('UserSource').load();
+      me.getStore('Role').load();
     }
   },
 
@@ -303,8 +305,7 @@ Ext.define('NX.coreui.controller.Users', {
    * (Re)create user source filters.
    */
   onUserSourceLoad: function(store) {
-    var me = this,
-        list = me.getList(),
+    var list = this.getList(),
         userSourceButton;
 
     if (list) {
@@ -346,7 +347,7 @@ Ext.define('NX.coreui.controller.Users', {
     }
     else {
       me.updateEmptyText();
-      me.getUserStore().removeAll();
+      me.getStore('User').removeAll();
     }
   },
 
@@ -368,7 +369,7 @@ Ext.define('NX.coreui.controller.Users', {
     }
     else {
       me.updateEmptyText();
-      me.getUserStore().removeAll();
+      me.getStore('User').removeAll();
     }
   },
 
@@ -407,14 +408,7 @@ Ext.define('NX.coreui.controller.Users', {
    * @private
    */
   onSettingsSubmitted: function(form, action) {
-    var me = this,
-        win = form.up('nx-coreui-user-add');
-
-    if (win) {
-      me.loadStoreAndSelect(action.result.data.userId, false);
-    } else {
-      me.loadStore(Ext.emptyFn);
-    }
+    this.getStore('User').load();
   },
 
   /**
@@ -452,10 +446,10 @@ Ext.define('NX.coreui.controller.Users', {
         description = me.getDescription(model);
 
     NX.direct.coreui_User.remove(model.getId(), model.get('realm'), function(response) {
-      me.loadStore();
+      me.getStore('User').load();
       if (Ext.isObject(response) && response.success) {
         NX.Messages.add({
-          text: NX.I18n.format('ADMIN_USERS_DETAILS_DELETE_SUCCESS', description), type: 'success'
+          text: NX.I18n.format('Users_Delete_Success', description), type: 'success'
         });
       }
     });
@@ -466,13 +460,12 @@ Ext.define('NX.coreui.controller.Users', {
    * Enable 'More' actions as appropriate for user's permissions.
    */
   bindMoreButton: function(button) {
-    var me = this,
-        setMenuItem = button.down('menuitem[action=setpassword]');
+    var setMenuItem = button.down('menuitem[action=setpassword]');
 
     button.mon(
         NX.Conditions.and(
             NX.Conditions.isPermitted('nexus:userschangepw:create'),
-            NX.Conditions.gridHasSelection(me.masters[0], function(model) {
+            NX.Conditions.gridHasSelection(this.masters[0], function(model) {
               return !model.get('external') && model.getId() !== NX.State.getValue('anonymousUsername');
             })
         ),
@@ -521,7 +514,7 @@ Ext.define('NX.coreui.controller.Users', {
     NX.direct.coreui_User.changePassword(win.authToken, win.userId, password, function(response) {
       if (Ext.isObject(response) && response.success) {
         win.close();
-        NX.Messages.add({ text: NX.I18n.get('ADMIN_USERS_DETAILS_CHANGE_SUCCESS'), type: 'success' });
+        NX.Messages.add({ text: NX.I18n.get('Users_Change_Success'), type: 'success' });
       }
     });
   }
